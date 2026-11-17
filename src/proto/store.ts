@@ -185,12 +185,14 @@ export const useProto = create<Store>()(
     }),
     {
       name: "tara-proto",
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => safeStorage),
       // v1 → v2: add tabs state and new debug keys, keep onboarding answers.
       migrate: (persisted, version) => {
         const p = (persisted ?? {}) as Partial<Store>;
         if (version < 2) return { ...initialTabs, ...p, debug: { ...initialDebug, ...(p.debug ?? {}) } } as Store;
+        // v2 → v3: the meal diary was rebuilt (Nov 1–17, per-serving nutrients); reseed it.
+        if (version < 3) return { ...p, meals: initialTabs.meals } as Store;
         return p as Store;
       },
       merge: (persisted, current) => {
