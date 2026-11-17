@@ -1,65 +1,49 @@
 @import "tailwindcss";
+@import "../styles/tokens.css";
 
-/* Design tokens from the Figma file "Playground › Onboarding · Final".
-   The app is dark-only, matching the design. */
-@theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+/* Tailwind theme mapped onto the Figma variables in tokens.css.
+   Prefer these utilities (bg-raised, text-secondary, ...) or var(--cravv-*) directly. Never eyedrop. */
+@theme inline {
+  --font-sans: var(--cravv-font);
 
-  --color-accent: #c98b58;          /* copper: progress, links, highlights */
-  --color-surface: #232326;         /* cards, fields */
-  --color-sheet: #1c1c1e;           /* bottom sheets */
-  --color-elevated: #2c2c2e;        /* secondary buttons */
-  --color-separator: #38383a;
-  --color-label: #ffffff;
-  --color-label-2: rgba(235, 235, 245, 0.6);   /* secondary text */
-  --color-label-3: rgba(235, 235, 245, 0.4);   /* tertiary text */
-  --color-track: rgba(255, 255, 255, 0.15);    /* inactive progress */
-  --color-success: #30d158;
-  --color-danger: #ff453a;
-  --color-warning: #ffd60a;
-
-  --radius-card: 26px;
-  --radius-sheet: 38px;
+  --color-page: var(--cravv-bg-page);
+  --color-deep: var(--cravv-bg-deep);
+  --color-raised: var(--cravv-surface-raised);
+  --color-recessed: var(--cravv-surface-recessed);
+  --color-secondary-surface: var(--cravv-surface-secondary);
+  --color-border: var(--cravv-border-default);
+  --color-primary: var(--cravv-text-primary);
+  --color-secondary: var(--cravv-text-secondary);
+  --color-placeholder: var(--cravv-text-placeholder);
+  --color-accent: var(--cravv-accent-default);
+  --color-accent-pressed: var(--cravv-accent-pressed);
+  --color-icon: var(--cravv-icon-default);
+  --color-success: var(--cravv-status-success);
+  --color-warning: var(--cravv-status-warning);
+  --color-alert: var(--cravv-status-alert);
+  --color-info: var(--cravv-status-info);
+  --color-track: var(--cravv-progress-track);
+  --color-copper: var(--cravv-copper-500);
 }
 
 html, body {
-  background: #0e0e10;
-  color: #fff;
+  background: var(--cravv-bg-deep);
+  color: var(--cravv-text-primary);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
+  font-family: var(--cravv-font);
 }
+body { min-height: 100dvh; }
 
-body {
-  font-family: var(--font-sans);
-  min-height: 100dvh;
-}
-
-/* The app background from every Figma frame */
-.app-bg {
-  background: linear-gradient(180deg, #1c1c1f 0%, #141416 60%, #0e0e10 100%);
-}
+/* Screen background from every frame: #1C1C1F → #141416 → #0E0E10 */
+.cravv-bg { background: linear-gradient(180deg, #1c1c1f 0%, var(--cravv-gray-950) 60%, var(--cravv-gray-1000) 100%); }
 
 button { cursor: pointer; }
 button:disabled { cursor: default; }
+:focus-visible { outline: 2px solid var(--cravv-accent-default); outline-offset: 2px; }
 
-:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
-}
-.animate-fade-up { animation: fade-up 0.35s ease-out both; }
-
-@keyframes sheet-up {
-  from { transform: translateY(100%); }
-  to { transform: none; }
-}
-.animate-sheet-up { animation: sheet-up 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-}
+/* --motion-scale is set by the debug menu ("Slow animations ×5"); CSS animations should multiply by it. */
+:root { --motion-scale: 1; }
+@keyframes cravv-spin { to { transform: rotate(360deg); } }
+.cravv-spin { animation: cravv-spin calc(0.8s * var(--motion-scale)) linear infinite; }

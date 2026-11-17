@@ -1,0 +1,147 @@
+/* Cravv app tokens, exported from Figma (Cravv Beta App UI Final) on 17 Nov 2026.
+   Dark only. Names match the Figma variables' WEB code syntax. */
+:root {
+  color-scheme: dark;
+  /* Primitives */
+  --cravv-gray-1000: #0E0E10;
+  --cravv-gray-950: #141416;
+  --cravv-gray-900: #1C1C1E;
+  --cravv-gray-850: #232326;
+  --cravv-gray-800: #2C2C2E;
+  --cravv-gray-700: #3A3A3C;
+  --cravv-gray-600: #545458;
+  --cravv-gray-400: #8E8E93;
+  --cravv-ink-primary: #FFFFFF;
+  --cravv-ink-secondary: rgba(235,235,245,0.6);
+  --cravv-copper-700: #A86F42;
+  --cravv-copper-500: #C98B58;
+  --cravv-copper-300: #DDA77A;
+  --cravv-green-500: #30D158;
+  --cravv-amber-500: #FFD60A;
+  --cravv-red-500: #FF453A;
+  --cravv-blue-500: #4DA3FF;
+  --cravv-violet-500: #BF8CFF;
+  --cravv-orange-500: #FF7A3D;
+  --cravv-mint-500: #66D4CF;
+  --cravv-cyan-500: #64D2FF;
+  --cravv-pink-500: #FF6FAE;
+  --cravv-white: #FFFFFF;
+  --cravv-black: #000000;
+
+  /* Semantic */
+  --cravv-bg-page: var(--cravv-gray-950);
+  --cravv-bg-deep: var(--cravv-gray-1000);
+  --cravv-surface-raised: var(--cravv-gray-850);
+  --cravv-surface-recessed: var(--cravv-gray-900);
+  --cravv-surface-secondary: var(--cravv-gray-800);
+  --cravv-border-default: var(--cravv-gray-700);
+  --cravv-border-accent: var(--cravv-copper-500);
+  --cravv-text-primary: var(--cravv-ink-primary);
+  --cravv-text-secondary: var(--cravv-ink-secondary);
+  --cravv-text-placeholder: var(--cravv-gray-600);
+  --cravv-text-accent: var(--cravv-copper-500);
+  --cravv-icon-default: var(--cravv-gray-400);
+  --cravv-accent-default: var(--cravv-copper-500);
+  --cravv-accent-pressed: var(--cravv-copper-700);
+  --cravv-status-success: var(--cravv-green-500);
+  --cravv-status-warning: var(--cravv-amber-500);
+  --cravv-status-alert: var(--cravv-red-500);
+  --cravv-status-info: var(--cravv-blue-500);
+  --cravv-progress-track: var(--cravv-gray-700);
+  --cravv-progress-fill: var(--cravv-copper-500);
+  --cravv-button-primary-fill: var(--cravv-ink-primary);
+  --cravv-button-primary-label: var(--cravv-gray-1000);
+  --cravv-button-surface-fill: var(--cravv-gray-800);
+  --cravv-toggle-on-fill: var(--cravv-green-500);
+
+  /* Option colours: base = icon, 14% tint, outline, check. fill = solid selected background (white text passes 4.6:1). */
+  --cravv-option-icon-off: #8E8E93;
+  --cravv-option-icon-on-fill: #FFFFFF;
+  --cravv-option-surface-off: #232326;
+  --cravv-option-diet-everything-base: #AF8CFF;
+  --cravv-option-diet-everything-fill: #7E65B8;
+  --cravv-option-diet-vegetarian-base: #30D158;
+  --cravv-option-diet-vegetarian-fill: #1F8538;
+  --cravv-option-diet-vegan-base: #2FD5B0;
+  --cravv-option-diet-vegan-fill: #1D836C;
+  --cravv-option-diet-pescatarian-base: #5AC8FA;
+  --cravv-option-diet-pescatarian-fill: #377B99;
+  --cravv-option-diet-gluten-free-base: #E0B040;
+  --cravv-option-diet-gluten-free-fill: #8F7029;
+  --cravv-option-diet-dairy-free-base: #F28FB8;
+  --cravv-option-diet-dairy-free-fill: #A15F7A;
+  --cravv-option-allergy-avoid-base: #D9A066;
+  --cravv-option-allergy-avoid-fill: #906A44;
+  --cravv-option-cuisine-american-base: #5E9BFF;
+  --cravv-option-cuisine-american-fill: #4774C0;
+  --cravv-option-cuisine-italian-base: #FF7F5C;
+  --cravv-option-cuisine-italian-fill: #B15840;
+  --cravv-option-cuisine-mexican-base: #F0629A;
+  --cravv-option-cuisine-mexican-fill: #BC4D79;
+  --cravv-option-cuisine-chinese-base: #F5D547;
+  --cravv-option-cuisine-chinese-fill: #857326;
+  --cravv-option-cuisine-mediterranean-base: #2BB5A6;
+  --cravv-option-cuisine-mediterranean-fill: #1F8378;
+  --cravv-option-cuisine-japanese-base: #8C7CFF;
+  --cravv-option-cuisine-japanese-fill: #7265D0;
+  --cravv-option-cuisine-thai-base: #9BD34A;
+  --cravv-option-cuisine-thai-fill: #5B7C2C;
+  --cravv-option-cuisine-indian-base: #FF9933;
+  --cravv-option-cuisine-indian-fill: #A36221;
+  --cravv-option-skill-new-base: #30D158;
+  --cravv-option-skill-new-fill: #1F8538;
+  --cravv-option-skill-comfortable-base: #E8A317;
+  --cravv-option-skill-comfortable-fill: #9A6C0F;
+  --cravv-option-skill-confident-base: #FF7A3D;
+  --cravv-option-skill-confident-fill: #B8582C;
+  --cravv-option-stove-gas-base: #4DA3FF;
+  --cravv-option-stove-gas-fill: #3876B8;
+  --cravv-option-stove-induction-base: #BF8CFF;
+  --cravv-option-stove-induction-fill: #8461B1;
+  --cravv-option-stove-electric-coil-base: #FF7A3D;
+  --cravv-option-stove-electric-coil-fill: #B8582C;
+  --cravv-option-stove-infrared-base: #F06292;
+  --cravv-option-stove-infrared-fill: #BC4D72;
+  --cravv-option-setup-power-base: #FF9F0A;
+  --cravv-option-setup-power-fill: #A36506;
+  --cravv-option-setup-range-hood-base: #A0AEC0;
+  --cravv-option-setup-range-hood-fill: #6A7480;
+  --cravv-option-setup-wifi-base: #4DA3FF;
+  --cravv-option-setup-wifi-fill: #3876B8;
+  --cravv-option-live-temperature-base: #FF7A3D;
+  --cravv-option-live-temperature-fill: #B8582C;
+  --cravv-option-live-whistles-base: #4DA3FF;
+  --cravv-option-live-whistles-fill: #3876B8;
+  --cravv-option-live-timer-base: #66D4CF;
+  --cravv-option-live-timer-fill: #3C7D7A;
+  --cravv-option-feedback-tip-base: #64D2FF;
+  --cravv-option-feedback-tip-fill: #3B7C96;
+
+  /* Radius / spacing (px) */
+  --cravv-radius-8: 8px;
+  --cravv-radius-10: 10px;
+  --cravv-radius-12: 12px;
+  --cravv-radius-14: 14px;
+  --cravv-radius-16: 16px;
+  --cravv-radius-20: 20px;
+  --cravv-radius-22: 22px;
+  --cravv-radius-24: 24px;
+  --cravv-radius-26: 26px;
+  --cravv-radius-32: 32px;
+  --cravv-radius-38: 38px;
+  --cravv-radius-full: 9999px;
+  --cravv-spacing-4: 4px;
+  --cravv-spacing-6: 6px;
+  --cravv-spacing-8: 8px;
+  --cravv-spacing-10: 10px;
+  --cravv-spacing-12: 12px;
+  --cravv-spacing-16: 16px;
+  --cravv-spacing-20: 20px;
+  --cravv-spacing-24: 24px;
+  --cravv-spacing-32: 32px;
+  --cravv-spacing-40: 40px;
+  --cravv-spacing-48: 48px;
+
+  /* Type: system font renders SF Pro on iPhone */
+  --cravv-font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, sans-serif;
+}
