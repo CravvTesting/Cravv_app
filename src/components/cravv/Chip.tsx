@@ -17,6 +17,11 @@ export type ChipProps = {
   token: OptionToken;
   onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
+  /**
+   * Spacing. "onboarding" (default) = Figma Chip 2611:4108: 8/10px padding, 4px gap (avoid: 9/12, 5).
+   * "filter" = Home filter sheet chips (2680:6714, handoff §11): 9/12px padding, 5px gap in every state.
+   */
+  variant?: "onboarding" | "filter";
   className?: string;
 };
 
@@ -24,7 +29,7 @@ export type ChipProps = {
  * Multi-select chip (Figma Chip 2611:4108). 34px pill; the hit area extends to 44px.
  * Selecting blooms the option fill from the touch point and turns the icon white.
  */
-export function Chip({ label, icon, state, token, onClick, disabled, className }: ChipProps) {
+export function Chip({ label, icon, state, token, onClick, disabled, variant = "onboarding", className }: ChipProps) {
   const { origin, onPointerDown, onKeyDown } = useBloomOrigin();
   const colorT = useColorTransition();
   const filled = state !== "off";
@@ -42,7 +47,7 @@ export function Chip({ label, icon, state, token, onClick, disabled, className }
         "relative isolate inline-flex h-[34px] shrink-0 items-center rounded-[17px] text-[15px] leading-none text-white",
         "before:absolute before:inset-x-0 before:-inset-y-[5px] before:content-['']",
         "select-none disabled:opacity-40",
-        avoid ? "gap-[5px] pl-[9px] pr-[12px]" : "gap-1 pl-2 pr-2.5",
+        avoid || variant === "filter" ? "gap-[5px] pl-[9px] pr-[12px]" : "gap-1 pl-2 pr-2.5",
         className
       )}
       style={{ background: "var(--cravv-option-surface-off)" }}

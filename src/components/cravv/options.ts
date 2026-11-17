@@ -16,7 +16,16 @@ export type OptionToken =
   | "stove-gas" | "stove-induction" | "stove-electric-coil" | "stove-infrared"
   | "setup-power" | "setup-range-hood" | "setup-wifi"
   | "live-temperature" | "live-whistles" | "live-timer"
-  | "feedback-tip";
+  | "feedback-tip"
+  | "activity-mostly-sitting" | "activity-lightly-active" | "activity-active" | "activity-very-active"
+  | "goal-lose" | "goal-maintain" | "goal-gain" | "goal-build-muscle"
+  | "body-age" | "body-sex" | "body-height" | "body-weight" | "body-pregnancy"
+  | "tab-home" | "tab-nutrition" | "tab-journal" | "tab-profile"
+  | "nutrient-protein" | "nutrient-carbs" | "nutrient-fat" | "nutrient-fiber"
+  | "nutrient-sodium" | "nutrient-added-sugar" | "nutrient-saturated-fat"
+  | "meal-breakfast" | "meal-lunch" | "meal-dinner"
+  | "course-mains" | "course-sides" | "course-soups" | "course-snacks" | "course-desserts"
+  | "more-can-make-now" | "more-hands-off" | "more-one-pot" | "more-easy";
 
 export type Option<Id extends string = string> = {
   id: Id;
@@ -99,3 +108,65 @@ export type CuisineId = (typeof CUISINES)[number]["id"];
 export type SkillId = (typeof SKILLS)[number]["id"];
 export type StoveTypeId = (typeof STOVE_TYPES)[number]["id"];
 export type SetupNeedId = (typeof SETUP_NEEDS)[number]["id"];
+
+/* ── Tabs (Components · Tabs, handoff §4 and §11) ─────────────────────────── */
+
+/** Bottom tabs. Active icon and pill take `--cravv-option-tab-<id>-base`. */
+export const TABS = [
+  { id: "home", label: "Home", icon: "home", token: "tab-home" },
+  { id: "nutrition", label: "Nutrition", icon: "ring", token: "tab-nutrition" },
+  { id: "journal", label: "Journal", icon: "book", token: "tab-journal" },
+  { id: "profile", label: "Profile", icon: "user", token: "tab-profile" },
+] as const satisfies readonly Option[];
+
+/**
+ * Nutrients (R01 "You're watching", macro ring). `kind`: "min" = a goal to reach (fiber, protein),
+ * "limit" = stay under (sodium, sugar, saturated fat). Fiber and sodium icons are from Figma;
+ * the others are the closest existing glyphs [assumed].
+ */
+export const NUTRIENTS = [
+  { id: "protein", label: "Protein", icon: "drumstick", token: "nutrient-protein", unit: "g", kind: "min" },
+  { id: "carbs", label: "Carbs", icon: "wheat", token: "nutrient-carbs", unit: "g", kind: "min" },
+  { id: "fat", label: "Fat", icon: "drop", token: "nutrient-fat", unit: "g", kind: "min" },
+  { id: "fiber", label: "Fiber", icon: "leaf", token: "nutrient-fiber", unit: "g", kind: "min" },
+  { id: "sodium", label: "Sodium", icon: "salt", token: "nutrient-sodium", unit: "mg", kind: "limit" },
+  { id: "added-sugar", label: "Added sugar", icon: "cube", token: "nutrient-added-sugar", unit: "g", kind: "limit" },
+  { id: "saturated-fat", label: "Saturated fat", icon: "drop", token: "nutrient-saturated-fat", unit: "g", kind: "limit" },
+] as const satisfies readonly (Option & { unit: string; kind: "min" | "limit" })[];
+
+/** Home meal filter (single choice). On = `--cravv-option-meal-<id>-fill`. `hours` = auto-select window [start, end). */
+export const MEALS = [
+  { id: "breakfast", label: "Breakfast", icon: "sunrise", token: "meal-breakfast", hours: [5, 11] },
+  { id: "lunch", label: "Lunch", icon: "sun", token: "meal-lunch", hours: [11, 16] },
+  { id: "dinner", label: "Dinner", icon: "moon", token: "meal-dinner", hours: [16, 29] },
+] as const satisfies readonly (Option & { hours: readonly [number, number] })[];
+
+/** Filter sheet · Course (multi-select chips, variant="filter"). */
+export const COURSES = [
+  { id: "mains", label: "Mains", icon: "utensils", token: "course-mains" },
+  { id: "sides", label: "Sides", icon: "sprout", token: "course-sides" },
+  { id: "soups", label: "Soups", icon: "soup", token: "course-soups" },
+  { id: "snacks", label: "Snacks", icon: "bread", token: "course-snacks" },
+  { id: "desserts", label: "Desserts", icon: "cake", token: "course-desserts" },
+] as const satisfies readonly Option[];
+
+/** Filter sheet · More (multi-select chips, variant="filter"). */
+export const MORE = [
+  { id: "can-make-now", label: "Can make now", icon: "egg", token: "more-can-make-now" },
+  { id: "hands-off", label: "Hands-off", icon: "flame", token: "more-hands-off" },
+  { id: "one-pot", label: "One pot", icon: "pot", token: "more-one-pot" },
+  { id: "easy", label: "Easy", icon: "chef", token: "more-easy" },
+] as const satisfies readonly Option[];
+
+export type TabId = (typeof TABS)[number]["id"];
+export type NutrientId = (typeof NUTRIENTS)[number]["id"];
+export type MealId = (typeof MEALS)[number]["id"];
+export type CourseId = (typeof COURSES)[number]["id"];
+export type MoreId = (typeof MORE)[number]["id"];
+
+/** Meal for a local hour: 5:00–10:59 breakfast, 11:00–15:59 lunch, otherwise dinner [assumed, handoff §11]. */
+export function mealForHour(hour: number): MealId {
+  if (hour >= 5 && hour < 11) return "breakfast";
+  if (hour >= 11 && hour < 16) return "lunch";
+  return "dinner";
+}
