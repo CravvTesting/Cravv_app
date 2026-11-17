@@ -6,7 +6,9 @@
  */
 import { motion, type PanInfo } from "motion/react";
 import type { ReactNode } from "react";
+import { BackButton, StepProgress } from "@/components/cravv";
 import { MOTION, useMotionTokens } from "./motion";
+import { back as navBack } from "./nav";
 
 const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(" ");
 
@@ -162,3 +164,33 @@ export function SystemAlert({ title, message, actions }: { title: string; messag
 }
 
 export { cx };
+
+// ---------------------------------------------------------------------------
+// Header used by most screens: Liquid Glass back button + optional step bar.
+// ---------------------------------------------------------------------------
+
+/**
+ * Top row of 03–13: back button (calls nav back(), or `onBack`) and the step bar.
+ * Personalise = steps 3, Connect = steps 4 (Connect · Wi-Fi · Stove · Camera).
+ */
+export function ScreenHeader({
+  back = true,
+  onBack,
+  steps,
+  current,
+  right,
+}: {
+  back?: boolean;
+  onBack?: () => void;
+  steps?: 3 | 4;
+  current?: number;
+  right?: ReactNode;
+}) {
+  return (
+    <div className="flex min-h-[56px] items-center gap-4">
+      <div className="flex w-12 shrink-0 items-center">{back && <BackButton onClick={onBack ?? (() => navBack())} />}</div>
+      {steps && current ? <div className="flex-1"><StepProgress steps={steps} current={current} /></div> : <div className="flex-1" />}
+      {right}
+    </div>
+  );
+}
