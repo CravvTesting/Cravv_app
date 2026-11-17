@@ -5,15 +5,10 @@
  * Home tab pieces (Figma "Home v2 · full scroll", 2568:3979). Layout is fluid 375–440;
  * cards in the rails keep their Figma sizes. Press feedback, rails and the toast are CSS only.
  */
-import type { CSSProperties, ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { cx } from "@/components/cravv";
-import { MEALS, type Meal, type Recipe } from "./data";
+import type { Recipe } from "./data";
 import s from "./home.module.css";
-
-/** Selected meal chip fill (Figma 2570:3357). No token exists for this indigo yet. */
-const MEAL_ON_FILL = "#4B49B8";
-/** Selected meal icon colour, from the Figma moon glyph (2570:3358). */
-const MEAL_ON_ICON = "#FFED65";
 
 const imgProps = (lazy: boolean) => ({ draggable: false, decoding: "async" as const, loading: lazy ? ("lazy" as const) : undefined });
 
@@ -60,49 +55,6 @@ export function SearchField() {
   );
 }
 
-/* ---------- Meal chips ---------- */
-
-export function MealChips({ value, onChange }: { value: Meal; onChange: (m: Meal) => void }) {
-  return (
-    <div className={cx(s.rail, s.noSnap, "gap-2")}>
-      <button
-        type="button"
-        aria-label="Filters"
-        className={cx("flex size-9 items-center justify-center rounded-full bg-white/[0.08]", s.press)}
-      >
-        <img src="/img/home/sliders.svg" alt="" width={18} height={18} />
-      </button>
-      <div role="radiogroup" aria-label="Meal" className="flex gap-2">
-        {MEALS.map((m) => {
-          const on = m.id === value;
-          return (
-            <button
-              key={m.id}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              onClick={() => onChange(m.id)}
-              className={cx(
-                "flex h-9 items-center gap-1.5 whitespace-nowrap rounded-[18px] pl-[11px] pr-3.5 text-[14px] text-white",
-                on ? "font-semibold" : "bg-white/[0.08] font-medium",
-                s.press,
-              )}
-              style={on ? { background: MEAL_ON_FILL } : undefined}
-            >
-              <span
-                className={s.maskIcon}
-                style={{ "--icon": `url(${m.icon})`, color: on ? MEAL_ON_ICON : "var(--cravv-gray-400)" } as CSSProperties}
-                aria-hidden
-              />
-              {m.label}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 /* ---------- Quick actions ---------- */
 
 export function QuickAction({ icon, title, hint }: { icon: string; title: string; hint: string }) {
@@ -124,15 +76,59 @@ export function QuickAction({ icon, title, hint }: { icon: string; title: string
 
 /* ---------- Sections ---------- */
 
-export function SectionHeader({ title, action }: { title: string; action?: string }) {
+/** `muted`: the action is a count ("6 recipes", F04) rather than a copper link. */
+export function SectionHeader({ title, action, muted = false }: { title: string; action?: string; muted?: boolean }) {
   return (
-    <div className="flex items-center justify-between px-5">
-      <h2 className="text-[22px] font-bold leading-[26px] text-white">{title}</h2>
+    <div className="flex items-center justify-between gap-3 px-5">
+      <h2 className="truncate text-[22px] font-bold leading-[26px] text-white">{title}</h2>
       {action && (
-        <button type="button" className={cx("-my-2 py-2 text-[15px] font-semibold leading-[18px] text-accent", s.pressDim)}>
+        <button
+          type="button"
+          className={cx("-my-2 shrink-0 py-2 text-[15px] leading-[18px]", muted ? "font-normal text-secondary" : "font-semibold text-accent", s.pressDim)}
+        >
           {action}
         </button>
       )}
+    </div>
+  );
+}
+
+/**
+ * Cross-fades its children when `k` changes: the old layer fades out while the new one fades in,
+ * both in the same grid cell (opacity only). Leaving layers drop out when their animation ends.
+ */
+export function CrossFade({ k, children }: { k: string; children: ReactNode }) {
+  const [shown, setShown] = useState<{ k: string; node: ReactNode }>({ k, node: children });
+  const [leaving, setLeaving] = useState<{ k: string; node: ReactNode }[]>([]);
+  if (shown.k !== k) {
+    setLeaving((l) => [...l.filter((x) => x.k !== k && x.k !== shown.k), shown]);
+    setShown({ k, node: children });
+  }
+  const first = leaving.length === 0 && shown.k === k;
+  return (
+    <div className={s.stack}>
+      {leaving.map((l) => (
+        <div key={l.k} className={s.layerOut} aria-hidden onAnimationEnd={() => setLeaving((xs) => xs.filter((x) => x.k !== l.k))}>
+          {l.node}
+        </div>
+      ))}
+      <div key={k} className={first ? undefined : s.layerIn}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/** Shown in the rail's place when the meal plus the filters leave nothing. */
+export function EmptyRail({ text, action, onAction }: { text: string; action: string; onAction: () => void }) {
+  return (
+    <div className="px-5">
+      <div className="flex h-[160px] flex-col items-center justify-center gap-2 rounded-[28px] bg-raised px-6 text-center">
+        <p className="text-[15px] leading-5 text-secondary">{text}</p>
+        <button type="button" onClick={onAction} className={cx("-my-1 py-1 text-[15px] font-semibold leading-5 text-accent", s.pressDim)}>
+          {action}
+        </button>
+      </div>
     </div>
   );
 }

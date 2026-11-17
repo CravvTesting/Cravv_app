@@ -5,10 +5,12 @@
  * Visual components from the Figma library live in @/components/cravv.
  */
 import { motion } from "motion/react";
-import { useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { BackButton, StepProgress } from "@/components/cravv";
 import { MOTION, useMotionTokens } from "./motion";
-import { back as navBack } from "./nav";
+import { back as navBack, useNavState } from "./nav";
+import { useScrollMemory } from "./scroll";
+import { useProto } from "./store";
 
 const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(" ");
 
@@ -229,6 +231,116 @@ export function ScreenHeader({
       <div className="flex w-12 shrink-0 items-center">{back && <BackButton onClick={onBack ?? (() => navBack())} />}</div>
       {steps && current ? <div className="flex-1"><StepProgress steps={steps} current={current} /></div> : <div className="flex-1" />}
       {right}
+    </div>
+  );
+}
+
+
+// ---------------------------------------------------------------------------
+// Large Title screen (tabs handoff §1.2): tab roots and pushed screens.
+// ---------------------------------------------------------------------------
+
+/** Bottom space taken by the floating tab bar (64 + 8 gap + home indicator). */
+export const TAB_BAR_SPACE = "calc(64px + 8px + max(env(safe-area-inset-bottom), 12px))";
+/** Extra space when the cooking mini bar is showing above the tab bar (58 + 6 gap). */
+export const MINI_BAR_SPACE = "64px";
+
+/**
+ * iOS Large Title screen.
+ * - `title` renders as a 34pt Bold Large Title at the top of the content. When it scrolls out
+ *   of view, an inline 17pt title fades into the top bar, which gains a background
+ *   (CSS opacity transitions only, driven by an IntersectionObserver: no scroll handlers).
+ * - `back`: round glass back button at top left (pushed screens). `onBack` overrides nav back().
+ * - `right`: trailing control in the top bar (e.g. a + button).
+ * - `tabRoot`: pads the bottom for the tab bar (and the mini bar when a session is live).
+ * - `subtitle`/`below`: content right under the Large Title (date line, segmented control).
+ * - Scroll position is remembered per screen id.
+ */
+export function LargeTitleScreen({
+  title,
+  subtitle,
+  below,
+  back = false,
+  onBack,
+  right,
+  tabRoot = false,
+  footer,
+  children,
+  contentClassName,
+}: {
+  title: string;
+  subtitle?: ReactNode;
+  below?: ReactNode;
+  back?: boolean;
+  onBack?: () => void;
+  right?: ReactNode;
+  tabRoot?: boolean;
+  footer?: ReactNode;
+  children?: ReactNode;
+  contentClassName?: string;
+}) {
+  const id = useNavState((s) => s.id);
+  const live = useProto((s) => s.live);
+  const m = useMotionTokens();
+  const scroller = useRef<HTMLDivElement>(null);
+  const sentinel = useRef<HTMLDivElement>(null);
+  const [collapsed, setCollapsed] = useState(false);
+  useScrollMemory(scroller, `lt:${id}`);
+
+  useEffect(() => {
+    const el = sentinel.current, root = scroller.current;
+    if (!el || !root) return;
+    const io = new IntersectionObserver(([e]) => setCollapsed(!e.isIntersecting), { root, threshold: 0, rootMargin: "-52px 0px 0px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const fade = m.reduced ? "none" : `opacity ${0.2 * m.scale}s ease`;
+  const hasBar = back || !!right;
+  const bottomPad = tabRoot ? `calc(${TAB_BAR_SPACE} + ${live ? MINI_BAR_SPACE : "0px"} + 24px)` : footer ? "16px" : "max(env(safe-area-inset-bottom), 24px)";
+
+  return (
+    <div className="cravv-bg relative flex h-full w-full flex-col overflow-hidden">
+      {/* Top bar: back / inline title / trailing. Background appears once collapsed. */}
+      <div className="absolute inset-x-0 top-0 z-20" style={{ paddingTop: "max(env(safe-area-inset-top), 8px)" }}>
+        <div
+          aria-hidden
+          className="absolute inset-0 border-b border-white/[0.06]"
+          style={{ background: "rgba(20,20,22,0.94)", opacity: collapsed ? 1 : 0, transition: fade }}
+        />
+        <div className="relative flex h-[52px] items-center px-4">
+          <div className="flex w-14 shrink-0 items-center">{back && <BackButton onClick={onBack ?? (() => navBack())} />}</div>
+          <p
+            className="flex-1 truncate text-center text-[17px] font-semibold"
+            style={{ opacity: collapsed ? 1 : 0, transition: fade }}
+            aria-hidden={!collapsed}
+          >
+            {title}
+          </p>
+          <div className="flex w-14 shrink-0 items-center justify-end">{right}</div>
+        </div>
+      </div>
+
+      <div
+        ref={scroller}
+        className={cx("relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-5", contentClassName)}
+        style={{
+          paddingTop: hasBar ? "calc(max(env(safe-area-inset-top), 8px) + 52px)" : "calc(max(env(safe-area-inset-top), 8px) + 12px)",
+          paddingBottom: bottomPad,
+        }}
+      >
+        <h1 className="text-[34px] font-bold leading-[41px] tracking-[0.4px]">{title}</h1>
+        <div ref={sentinel} aria-hidden className="h-px" />
+        {subtitle && <div className="mt-0.5 text-[15px] leading-5 text-secondary">{subtitle}</div>}
+        {below && <div className="mt-4">{below}</div>}
+        <div className={subtitle || below ? "mt-5" : "mt-4"}>{children}</div>
+      </div>
+
+      {footer && (
+        <div className="relative z-10 shrink-0 px-5 pt-3" style={{ paddingBottom: "max(env(safe-area-inset-bottom), 16px)" }}>
+          {footer}
+        </div>
+      )}
     </div>
   );
 }

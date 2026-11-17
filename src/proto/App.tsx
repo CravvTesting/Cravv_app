@@ -1,12 +1,12 @@
 "use client";
 
 import { AnimatePresence, MotionConfig } from "motion/react";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { REGISTRY } from "@/screens/registry";
 import { DebugMenu } from "./DebugMenu";
 import { MOTION, useMotionTokens } from "./motion";
-import { BACK, go, initNav, isTab, useNavState, type Direction } from "./nav";
-import { TabBar } from "./TabBar";
+import { backTarget, go, initNav, TAB_ROOT_SCREENS, useNavState, type Direction } from "./nav";
+import { TabChrome } from "./TabChrome";
 import { useProto, type ScreenId } from "./store";
 import { warmImages } from "./warmImages";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -191,7 +191,9 @@ export function App() {
 
   // ----- interactive edge swipe -----
   const drag = useRef<{ x0: number; lastX: number; lastT: number; v: number; dx: number; topKey: string; underKey: string } | null>(null);
-  const backTo = BACK[id];
+  const stackLen = useNavState((s) => s.stack.length);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const backTo = useMemo(() => backTarget(), [id, stackLen]);
   const isOverlay = !!REGISTRY[id].base;
 
   // A touch near the left edge is only a *candidate*; the swipe starts once the finger has moved
@@ -325,8 +327,11 @@ export function App() {
             </div>
           );
         })}
-        {isTab(id) && <TabBar active={id} />}
-        <ErrorBoundary><AnimatePresence>{Overlay && <Overlay key={id} id={id} />}</AnimatePresence></ErrorBoundary>
+        <TabChrome show={TAB_ROOT_SCREENS.has(id)} />
+        {/* Overlays (sheets, action sheets, alerts) sit above the tab chrome. */}
+        <div className="cravv-overlay-layer pointer-events-none absolute inset-0 z-[80]">
+          <ErrorBoundary><AnimatePresence>{Overlay && <Overlay key={REGISTRY[id].group ?? id} id={id} />}</AnimatePresence></ErrorBoundary>
+        </div>
         <DebugMenu />
       </div>
     </MotionConfig>

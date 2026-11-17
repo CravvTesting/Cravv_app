@@ -3,14 +3,16 @@
 /*
  * 05 · How you cook (2525:2745). Cooking for: stepper 1–8 (default 2). Units: US / Metric pill
  * segmented control. Skill: single-select choice tiles (default Comfortable).
+ * As "e05" (Profile → How you cook): edit mode, back button instead of the step bar, Save → back.
  */
 import { AnimatePresence, motion } from "motion/react";
 import type { ReactNode } from "react";
 import { ChoiceTile, ChoiceTileGroup, Icon, PrimaryButton, SectionTitle, SegmentedControl, SKILLS, type IconName } from "@/components/cravv";
 import { useMotionTokens } from "@/proto/motion";
-import { go } from "@/proto/nav";
+import { back, go } from "@/proto/nav";
 import { useProto } from "@/proto/store";
 import { Screen, ScreenHeader } from "@/proto/ui";
+import type { ScreenProps } from "./registry";
 
 const MIN = 1;
 const MAX = 8;
@@ -39,7 +41,8 @@ function StepButton({ label, glyph, disabled, onClick }: { label: string; glyph:
   );
 }
 
-export default function S05() {
+export default function S05({ id }: ScreenProps) {
+  const edit = id === "e05";
   const m = useMotionTokens();
   const cookingFor = useProto((s) => s.cookingFor);
   const units = useProto((s) => s.units);
@@ -49,7 +52,10 @@ export default function S05() {
   const step = (d: 1 | -1) => set({ cookingFor: Math.min(MAX, Math.max(MIN, cookingFor + d)) });
 
   return (
-    <Screen header={<ScreenHeader steps={3} current={3} />} footer={<PrimaryButton onClick={() => go("06")}>Continue</PrimaryButton>}>
+    <Screen
+      header={edit ? <ScreenHeader /> : <ScreenHeader steps={3} current={3} />}
+      footer={<PrimaryButton onClick={() => (edit ? back() : go("06"))}>{edit ? "Save" : "Continue"}</PrimaryButton>}
+    >
       <h1 className="text-[34px] font-bold leading-[41px] tracking-[0.4px] text-white">How do you cook?</h1>
       <p className="mt-[5px] text-[17px] leading-[22px] tracking-[-0.43px] text-secondary">Tara adjusts how much she says.</p>
 

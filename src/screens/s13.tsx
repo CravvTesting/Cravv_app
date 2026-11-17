@@ -10,7 +10,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { CalibrationProgress, CalibrationResult, PrimaryButton, StatusPill, TextButton } from "@/components/cravv";
 import { useMotionTokens } from "@/proto/motion";
-import { go, useNavState } from "@/proto/nav";
+import { back, go, useNavState } from "@/proto/nav";
 import { useProto, type Burners, type ScreenId } from "@/proto/store";
 import { useAfter, useTiming } from "@/proto/timing";
 import { Screen, ScreenHeader } from "@/proto/ui";
@@ -154,7 +154,7 @@ export default function S13({ id }: ScreenProps) {
 
   const cancel = () => {
     set({ calibrationProgress: 0, wifiDroppedThisRun: false });
-    go("12", { dir: "pop" });
+    back(); // onboarding → 12; from Profile (Recalibrate) → back to where it started
   };
   const retry = () => {
     set({ calibrationProgress: 0, wifiDroppedThisRun: false });

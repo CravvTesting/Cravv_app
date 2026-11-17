@@ -1,19 +1,6 @@
-/* Home tab content (Figma "Home v2 · full scroll", 2568:3979). Static for the prototype. */
-
-export type Meal = "breakfast" | "lunch" | "dinner";
-
-export const MEALS: { id: Meal; label: string; icon: string }[] = [
-  { id: "breakfast", label: "Breakfast", icon: "/img/home/sunrise.svg" },
-  { id: "lunch", label: "Lunch", icon: "/img/home/sun.svg" },
-  { id: "dinner", label: "Dinner", icon: "/img/home/moon.svg" },
-];
+/* Home tab content (Figma "Home v2 · full scroll", 2568:3979). Static rails; the filterable catalogue is in recipes.ts. */
 
 export type Recipe = { id: string; title: string; meta: string; img: string; tag?: string };
-
-export const TONIGHT: Recipe[] = [
-  { id: "green-curry", title: "Thai Green Curry", meta: "35 min · Thai · fits your week", img: "/img/home/green-curry.webp" },
-  { id: "pad-thai", title: "Pad Thai", meta: "25 min · Thai", img: "/img/home/pad-thai.webp" },
-];
 
 /** Family recipes first, then saved ones. */
 export const YOUR_RECIPES: Recipe[] = [
@@ -41,10 +28,4 @@ export function greetingFor(hour: number) {
   if (hour >= 5 && hour < 12) return "Good morning";
   if (hour >= 12 && hour < 17) return "Good afternoon";
   return "Good evening";
-}
-
-export function mealFor(hour: number): Meal {
-  if (hour >= 4 && hour < 11) return "breakfast";
-  if (hour >= 11 && hour < 16) return "lunch";
-  return "dinner";
 }

@@ -32,21 +32,6 @@
   scroll-snap-align: start;
   flex-shrink: 0;
 }
-/* Chips row scrolls too on narrow phones, but without snapping. */
-.rail.noSnap {
-  scroll-snap-type: none;
-}
-
-/* Meal icons are the Figma SVGs used as masks so the colour follows the selection. */
-.maskIcon {
-  display: block;
-  width: 18px;
-  height: 18px;
-  background-color: currentColor;
-  -webkit-mask: var(--icon) center / contain no-repeat;
-  mask: var(--icon) center / contain no-repeat;
-}
-
 /* "Sent to Tara": rise + fade in, hold, fade out. ~2 s. */
 @keyframes toast {
   0% { opacity: 0; transform: translateY(12px) scale(0.96); }
@@ -81,4 +66,41 @@
 .press:has(button:active):active {
   transform: none;
   opacity: 1;
+}
+
+/* F03 note: settles in under the chips. */
+@keyframes noteIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.noteIn {
+  animation: noteIn calc(0.3s * var(--motion-scale)) var(--ease-ios) both;
+}
+
+/* Cards cross-fade when the meal or the filters change: layers share one grid cell. */
+.stack {
+  display: grid;
+}
+.stack > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+@keyframes layerIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes layerOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.layerIn {
+  animation: layerIn calc(0.32s * var(--motion-scale)) var(--ease-ios) both;
+}
+.layerOut {
+  animation: layerOut calc(0.24s * var(--motion-scale)) ease both;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .noteIn { animation: none; }
+  .layerIn, .layerOut { animation-duration: 1ms; }
 }
