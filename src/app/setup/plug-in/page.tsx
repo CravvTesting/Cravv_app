@@ -16,7 +16,7 @@ export default function PlugIn() {
     <Screen padded={false}>
       {/* Photo with fade, flexes down on short screens (540 tall in the design). */}
       <div className="relative h-[clamp(260px,calc(100dvh-334px),540px)] shrink-0 overflow-hidden">
-        <img src="/img/connect/tara-counter.png" alt="Tara on a kitchen counter" className="absolute inset-0 h-full w-full object-cover" />
+        <img src="/img/connect/tara-counter.webp" alt="Tara on a kitchen counter" className="absolute inset-0 h-full w-full object-cover" />
         <img src="/img/connect/plug-fade.svg" alt="" width={402} height={540} className="absolute inset-0 h-full w-full" />
         <div className="absolute inset-x-0 top-0 px-5">
           <TopBar step={1} total={4} />

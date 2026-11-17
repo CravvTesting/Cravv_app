@@ -28,7 +28,7 @@ export default function Pair() {
       {/* Kitchen photo: 600 tall in the design, card overlaps its lower 164px. */}
       <div className="absolute inset-x-0 top-0 h-[max(320px,calc(100dvh-274px))] overflow-hidden" aria-hidden>
         <img src="/img/connect/kitchen-base.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <img src="/img/connect/kitchen.png" alt="" className="absolute left-[-5.69%] top-[0.06%] h-[93.2%] w-[111.28%] max-w-none object-cover" />
+        <img src="/img/connect/kitchen.webp" alt="" className="absolute left-[-5.69%] top-[0.06%] h-[93.2%] w-[111.28%] max-w-none object-cover" />
         <div className="absolute inset-x-0 top-0 h-[120px] bg-gradient-to-b from-black/55 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-b from-[rgba(28,28,31,0)] to-[#121214] to-[93.833%]" />
       </div>
