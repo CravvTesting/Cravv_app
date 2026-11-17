@@ -1,20 +1,25 @@
 "use client";
 
 /*
- * Home tab (Figma "Home v2" 2568:4136, full scroll 2568:3979).
- * Greeting + "What's cooking?", Tara status pill, search, meal chips, quick actions,
- * "For tonight" rail, "Your recipes" rail (family first), Collections grid, Under 30 minutes.
- * The shell draws the floating tab bar over this screen; content pads below it.
- * Nothing navigates yet except "Set up" on the Tara pill (→ 07a).
+ * Home tab (Figma "Home v2" 2568:4136; meal filter row 2665:16508, filters on F04 2681:6517).
+ * Greeting + "What's cooking?", Tara status pill, search, meal filter row, quick actions,
+ * "For tonight" rail (filtered by meal + store.homeFilters), "Your recipes", Collections, Under 30 minutes.
+ * The shell draws the floating tab bar, scroll fade and mini bar over this screen; content pads below them.
+ * Meal: single choice, default by local time (or debug "Home · time of day"); tapping the selected chip
+ * clears it ("Recipes for you", every meal). Filter button → F01/F02/F03 sheet.
  */
 import { useEffect, useRef, useState } from "react";
+import { MealFilterRow, mealForHour, type MealId } from "@/components/cravv";
 import { go } from "@/proto/nav";
 import { useProto } from "@/proto/store";
-import { TAB_BAR_SPACE } from "@/proto/ui";
-import { COLLECTIONS, QUICK, TONIGHT, YOUR_RECIPES, greetingFor, mealFor, type Meal } from "./home/data";
+import { MINI_BAR_SPACE, TAB_BAR_SPACE } from "@/proto/ui";
+import { COLLECTIONS, QUICK, YOUR_RECIPES, greetingFor } from "./home/data";
+import { filtersScreen } from "./home/Filters";
+import { filterCount, filterRecipes, recipeMeta } from "./home/recipes";
 import {
   CollectionTile,
-  MealChips,
+  CrossFade,
+  EmptyRail,
   QuickAction,
   QuickList,
   Rail,
@@ -26,15 +31,31 @@ import {
   TonightCard,
 } from "./home/parts";
 
+type TimeOfDay = "auto" | MealId;
+type MealPick = { forced: TimeOfDay; meal: MealId | null };
+/** The pick survives Home remounting (tab switches) until the debug time of day changes. */
+let lastPick: MealPick | null = null;
+const pickFor = (forced: TimeOfDay): MealPick => ({ forced, meal: forced === "auto" ? mealForHour(new Date().getHours()) : forced });
+
+const SECTION_TITLE: Record<MealId, string> = { breakfast: "For breakfast", lunch: "For lunch", dinner: "For tonight" };
+const RAIL_MAX = 8;
+
 const TOAST_MS = 2000;
 
 export default function Home() {
   const name = useProto((st) => st.name);
   const setupPending = useProto((st) => st.setupPending);
   const slow = useProto((st) => st.debug.slowAnimations);
+  const live = useProto((st) => st.live);
+  const timeOfDay = useProto((st) => st.debug.timeOfDay);
+  const filters = useProto((st) => st.homeFilters);
+  const diet = useProto((st) => st.diet);
 
   const [hour] = useState(() => new Date().getHours());
-  const [meal, setMeal] = useState<Meal>(() => mealFor(hour));
+  const [pick, setPick] = useState<MealPick>(() => (lastPick && lastPick.forced === timeOfDay ? lastPick : pickFor(timeOfDay)));
+  if (pick.forced !== timeOfDay) setPick(pickFor(timeOfDay));
+  useEffect(() => { lastPick = pick; }, [pick]);
+  const meal = pick.meal;
   const [toast, setToast] = useState(0); // 0 = hidden; otherwise a key so repeat taps restart it
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -47,6 +68,12 @@ export default function Home() {
   };
 
   const greeting = greetingFor(hour) + (name ? `, ${name}` : "");
+  const active = filterCount(filters);
+  const found = filterRecipes(filters, diet, meal);
+  const cards = found.slice(0, RAIL_MAX).map((r) => ({ id: r.id, title: r.title, meta: recipeMeta(r), img: r.img }));
+  const title = meal ? SECTION_TITLE[meal] : "Recipes for you";
+  const openFilters = () => go(filtersScreen(filters, diet));
+  const bottom = `calc(${TAB_BAR_SPACE} + ${live ? MINI_BAR_SPACE : "0px"}`;
 
   return (
     <div className="cravv-bg relative h-full w-full overflow-hidden">
@@ -55,7 +82,7 @@ export default function Home() {
         data-home-scroll
         style={{
           paddingTop: "calc(max(env(safe-area-inset-top), 16px) + 4px)",
-          paddingBottom: `calc(${TAB_BAR_SPACE} + 24px)`,
+          paddingBottom: `${bottom} + 24px)`,
         }}
       >
         {/* Greeting + Tara */}
@@ -73,8 +100,13 @@ export default function Home() {
           <SearchField />
         </div>
 
-        <div className="mt-3">
-          <MealChips value={meal} onChange={setMeal} />
+        <div className="mt-3 px-5">
+          <MealFilterRow
+            selected={meal}
+            onSelect={(m) => setPick({ forced: timeOfDay, meal: m })}
+            filterCount={active}
+            onFilters={openFilters}
+          />
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-3 px-5">
@@ -82,12 +114,26 @@ export default function Home() {
           <QuickAction icon="/img/home/book.svg" title="My recipes" hint="26 saved · 2 family" />
         </div>
 
-        <section className="mt-6" aria-label="For tonight">
-          <SectionHeader title="For tonight" action="See all" />
+        <section className="mt-6" aria-label={title}>
+          <SectionHeader
+            title={title}
+            action={active ? `${found.length} ${found.length === 1 ? "recipe" : "recipes"}` : "See all"}
+            muted={active > 0}
+          />
           <div className="mt-3.5">
-            <Rail label="For tonight">
-              {TONIGHT.map((r) => <TonightCard key={r.id} recipe={r} onCook={cook} />)}
-            </Rail>
+            <CrossFade k={`${meal ?? "all"}|${JSON.stringify(filters)}`}>
+              {cards.length ? (
+                <Rail label={title}>
+                  {cards.map((r) => <TonightCard key={r.id} recipe={r} onCook={cook} />)}
+                </Rail>
+              ) : (
+                <EmptyRail
+                  text={meal ? `No ${meal} recipes match your filters.` : "No recipes match your filters."}
+                  action="Edit Filters"
+                  onAction={openFilters}
+                />
+              )}
+            </CrossFade>
           </div>
         </section>
 
@@ -115,18 +161,7 @@ export default function Home() {
         </section>
       </div>
 
-      {/* Scroll fade behind the tab bar (Figma 2568:4269) */}
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0"
-        style={{
-          height: `calc(${TAB_BAR_SPACE} + 72px)`,
-          background:
-            "linear-gradient(180deg, color-mix(in srgb, var(--cravv-gray-1000) 0%, transparent) 0%, color-mix(in srgb, var(--cravv-gray-1000) 95%, transparent) 60%, var(--cravv-gray-1000) 100%)",
-        }}
-        aria-hidden
-      />
-
-      {toast > 0 && <Toast key={toast} text="Sent to Tara" bottom={`calc(${TAB_BAR_SPACE} + 12px)`} />}
+      {toast > 0 && <Toast key={toast} text="Sent to Tara" bottom={`${bottom} + 12px)`} />}
     </div>
   );
 }
