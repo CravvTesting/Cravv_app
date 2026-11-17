@@ -11,7 +11,9 @@ export const MOTION = {
   /** iOS-like spring, about 0.35 s, no visible overshoot. */
   spring: { type: "spring", duration: 0.35, bounce: 0 } as const,
   /** Push/pop between screens. */
-  page: { type: "spring", duration: 0.45, bounce: 0 } as const,
+  page: { type: "spring", duration: 0.5, bounce: 0 } as const,
+  /** Wait before a push/pop slide starts, so the new screen renders off-screen first (s). */
+  pageDelay: 0.06,
   /** Outgoing screen parallax on push (fraction of width). */
   parallax: 0.3,
   /** Sheet rise. */

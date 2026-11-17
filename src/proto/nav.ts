@@ -8,7 +8,8 @@
 import { create } from "zustand";
 import { isScreenId, useProto, type ScreenId } from "./store";
 
-export type Direction = "push" | "pop" | "none";
+/** push/pop = iOS slide, none = cross-fade, instant = no animation (end of an edge swipe). */
+export type Direction = "push" | "pop" | "none" | "instant";
 
 type NavState = {
   id: ScreenId;
@@ -56,9 +57,12 @@ export function go(id: ScreenId, opts: GoOptions = {}) {
     // Popping to a screen already in the stack: trim to it.
     const i = stack.lastIndexOf(id);
     next = i >= 0 ? stack.slice(0, i + 1) : [...stack.slice(0, -1), id];
+  } else if (dir === "instant") {
+    const i = stack.lastIndexOf(id);
+    next = i >= 0 ? stack.slice(0, i + 1) : [...stack.slice(0, -1), id];
   } else next = [...stack, id];
   useNavState.setState({ id, stack: next, dir });
-  writeHash(id, !!opts.replace || dir === "pop");
+  writeHash(id, !!opts.replace || dir === "pop" || dir === "instant");
   remember(id);
 }
 

@@ -1,12 +1,18 @@
 /* Tara service worker.
    - Navigations: network first, cached copy when offline.
    - Static assets (/_next/static, /img, /icons): cache first. */
-const VERSION = "tara-v4";
+const VERSION = "tara-v5";
 const PRECACHE = ["/", "/manifest.webmanifest", "/icons/icon-192.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(VERSION).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting())
+    caches.open(VERSION)
+      .then(async (c) => {
+        await c.addAll(PRECACHE);
+        // Every app image (list generated at build), so the prototype works offline.
+        try { await c.addAll(await (await fetch("/precache.json")).json()); } catch { /* ignore */ }
+      })
+      .then(() => self.skipWaiting())
   );
 });
 

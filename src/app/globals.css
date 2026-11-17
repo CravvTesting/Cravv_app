@@ -34,7 +34,15 @@ html, body {
   overscroll-behavior: none;
   font-family: var(--cravv-font);
 }
-body { min-height: 100dvh; }
+body {
+  min-height: 100dvh;
+  /* App feel on iPhone: no text selection or long-press callouts outside inputs. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+input, textarea { -webkit-user-select: text; user-select: text; }
+img { -webkit-user-drag: none; }
 
 /* Screen background from every frame: #1C1C1F → #141416 → #0E0E10 */
 .cravv-bg { background: linear-gradient(180deg, #1c1c1f 0%, var(--cravv-gray-950) 60%, var(--cravv-gray-1000) 100%); }
