@@ -11,6 +11,8 @@ export const SCREEN_IDS = [
   "10", "10x", "10b",
   "11", "12", "12h", "13", "13p", "13r", "13s", "13x", "13y", "13n",
   "14", "14b", "home",
+  // App tabs (after onboarding)
+  "nutrition", "journal", "profile",
 ] as const;
 export type ScreenId = (typeof SCREEN_IDS)[number];
 export const isScreenId = (v: string): v is ScreenId => (SCREEN_IDS as readonly string[]).includes(v);

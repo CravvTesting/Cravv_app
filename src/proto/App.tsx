@@ -5,7 +5,8 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type Pointer
 import { REGISTRY } from "@/screens/registry";
 import { DebugMenu } from "./DebugMenu";
 import { MOTION, useMotionTokens } from "./motion";
-import { BACK, go, initNav, useNavState, type Direction } from "./nav";
+import { BACK, go, initNav, isTab, useNavState, type Direction } from "./nav";
+import { TabBar } from "./TabBar";
 import { useProto, type ScreenId } from "./store";
 import { warmImages } from "./warmImages";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -324,6 +325,7 @@ export function App() {
             </div>
           );
         })}
+        {isTab(id) && <TabBar active={id} />}
         <ErrorBoundary><AnimatePresence>{Overlay && <Overlay key={id} id={id} />}</AnimatePresence></ErrorBoundary>
         <DebugMenu />
       </div>

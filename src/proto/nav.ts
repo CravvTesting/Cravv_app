@@ -29,7 +29,13 @@ export const BACK: Record<ScreenId, ScreenId | null> = {
   "11": "10", "12": "11", "12h": "12",
   "13": "12", "13p": null, "13r": null, "13s": "12", "13x": "12", "13y": "12", "13n": "13s",
   "14": null, "14b": null, "home": null,
+  "nutrition": null, "journal": null, "profile": null,
 };
+
+/** The four app tabs. Switching between them is instant, like UITabBarController. */
+export const TABS = ["home", "nutrition", "journal", "profile"] as const;
+export type TabId = (typeof TABS)[number];
+export const isTab = (id: string): id is TabId => (TABS as readonly string[]).includes(id);
 
 /**
  * The URL hash always shows the current screen (for deep links), but we never add browser
@@ -41,7 +47,7 @@ function writeHash(id: ScreenId) {
 }
 
 function remember(id: ScreenId) {
-  const done = id === "home";
+  const done = isTab(id);
   useProto.getState().set(done ? { step: id, done: true } : { step: id });
 }
 
@@ -78,7 +84,7 @@ export function back(to?: ScreenId) {
 export function initNav() {
   const fromHash = location.hash.replace(/^#\/?/, "");
   const { step, done } = useProto.getState();
-  const start: ScreenId = isScreenId(fromHash) ? fromHash : done ? "home" : step;
+  const start: ScreenId = isScreenId(fromHash) ? fromHash : done ? (isTab(step) ? step : "home") : step;
   useNavState.setState({ id: start, stack: [start], dir: "none" });
   writeHash(start);
   remember(start);

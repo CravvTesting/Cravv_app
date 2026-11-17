@@ -27,6 +27,9 @@ import S13n from "./s13n";
 import S14 from "./s14";
 import S14b from "./s14b";
 import Home from "./home";
+import Nutrition from "./nutrition";
+import Journal from "./journal";
+import Profile from "./profile";
 
 export type ScreenProps = { id: ScreenId };
 
@@ -79,6 +82,9 @@ export const REGISTRY: Record<ScreenId, Entry> = {
   "14": { Component: S14 },
   "14b": { Component: S14b },
   "home": { Component: Home },
+  "nutrition": { Component: Nutrition },
+  "journal": { Component: Journal },
+  "profile": { Component: Profile },
 };
 
 /** Human names for the debug menu's Jump to screen list. */
@@ -91,4 +97,5 @@ export const SCREEN_NAMES: Record<ScreenId, string> = {
   "11": "Your stove", "12": "Attach the camera", "12h": "Hood sheet", "13": "Calibrating",
   "13p": "Tara offline", "13r": "Back online", "13s": "Calibrated", "13x": "Sees 3 of 4", "13y": "Sees 5, picked 4",
   "13n": "Turn on alerts", "14": "All set", "14b": "All set, first cook", "home": "Home",
+  "nutrition": "Nutrition", "journal": "Journal", "profile": "Profile",
 };
