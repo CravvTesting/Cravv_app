@@ -64,8 +64,8 @@ export default function FirstCook() {
 
           <div className="mt-3 flex h-[60px] items-center rounded-[20px] bg-surface pl-3 pr-3.5">
             <div className="flex shrink-0">
-              <img src="/img/stove/pick-1.png" alt="" width={36} height={36} className="size-9 rounded-[10px] border-2 border-surface object-cover" />
-              <img src="/img/stove/pick-2.png" alt="" width={36} height={36} className="-ml-2 size-9 rounded-[10px] border-2 border-surface object-cover" />
+              <img src="/img/stove/pick-1.webp" alt="" width={36} height={36} className="size-9 rounded-[10px] border-2 border-surface object-cover" />
+              <img src="/img/stove/pick-2.webp" alt="" width={36} height={36} className="-ml-2 size-9 rounded-[10px] border-2 border-surface object-cover" />
             </div>
             <span className="ml-3 flex-1 text-[17px] text-white">2 more picks for you</span>
             <img src="/img/stove/icon-chev.svg" alt="" width={18} height={18} className="shrink-0" />

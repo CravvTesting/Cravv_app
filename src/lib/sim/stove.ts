@@ -61,8 +61,8 @@ export function runCalibration(opts: {
 export function pickFirstRecipe(diet: string) {
   const veg = /veg/i.test(diet);
   return veg
-    ? { name: "Black Bean Tacos", time: "30 min", handsOn: "10 min hands-on", cuisine: "Mexican", image: "/img/stove/dish-tacos.png" }
-    : { name: "Chicken Tacos", time: "25 min", handsOn: "10 min hands-on", cuisine: "Mexican", image: "/img/stove/dish-tacos.png" };
+    ? { name: "Black Bean Tacos", time: "30 min", handsOn: "10 min hands-on", cuisine: "Mexican", image: "/img/stove/dish-tacos.webp" }
+    : { name: "Chicken Tacos", time: "25 min", handsOn: "10 min hands-on", cuisine: "Mexican", image: "/img/stove/dish-tacos.webp" };
 }
 
 /** "vegetarian, no peanuts, serves 2" */
