@@ -113,8 +113,8 @@ export type GoOptions = {
  * - default: iOS push onto the current stack
  * - { replace: true, dir: "none" }: swap the current screen in place with a cross-fade
  * - { dir: "pop" }: pop back to that screen (trims the stack)
- * - { dir: "none" } without replace: a jump (debug menu, deep link, reset). Rebuilds the
- *   natural stack for the target, entering or leaving the tabs as needed.
+ * - { dir: "none" } without replace: cross-fade to a screen in the same stack (trims back to it
+ *   if it's already in the stack, otherwise adds it). Full jumps use jumpTo().
  */
 export function go(id: ScreenId, opts: GoOptions = {}) {
   const s = useNavState.getState();
@@ -122,27 +122,21 @@ export function go(id: ScreenId, opts: GoOptions = {}) {
 
   // Leaving onboarding into the app (14 → home, 02c → home, 06 → home…): start the tabs fresh.
   const entering = !s.tab && naturalTab(id) !== null && (id === "home" || SEGMENT_ROOTS.has(id));
-  if ((dir === "none" && !opts.replace) || entering) {
+  if (entering) {
     const tab = naturalTab(id);
-    // From a tab into onboarding (e.g. Set Up Tara → 07a) is a push inside the tab, not a jump.
-    if (dir !== "none" && s.tab && !tab) {
-      commit({ ...s, id, dir, stack: [...s.stack, id] });
-      return;
-    }
-    const tabStacks = tab ? { ...(s.tab === tab ? s.tabStacks : s.tabStacks) } : {};
-    commit({ id, dir: entering && dir === "push" ? "none" : dir, tab, stack: tab ? naturalStack(id) : [id], tabStacks });
+    commit({ id, dir: dir === "push" ? "none" : dir, tab, stack: tab ? naturalStack(id) : [id], tabStacks: {} });
     return;
   }
 
   // Heading to a tab root from inside the tabs (e.g. the end of Set Up Tara → "home"):
   // land on that tab's root instead of stacking a copy of it.
   const rootTab = SEGMENT_ROOTS.has(id) ? naturalTab(id) : null;
-  if (s.tab && rootTab && !opts.replace && (dir === "push" || dir === "pop")) {
+  if (s.tab && rootTab && !opts.replace && dir !== "instant") {
     if (rootTab === s.tab) {
       const i = s.stack.lastIndexOf(id);
-      if (i >= 0) { commit({ ...s, id, dir: "pop", stack: s.stack.slice(0, i + 1) }); return; }
-      if (dir === "push" && s.stack.length > 1 && !SEGMENT_ROOTS.has(s.id)) {
-        commit({ ...s, id, dir: "pop", stack: [id] }); return;
+      if (i >= 0) { commit({ ...s, id, dir: dir === "none" ? "none" : "pop", stack: s.stack.slice(0, i + 1) }); return; }
+      if (dir !== "pop" && s.stack.length > 1 && !SEGMENT_ROOTS.has(s.id)) {
+        commit({ ...s, id, dir: dir === "none" ? "none" : "pop", stack: [id] }); return;
       }
     } else {
       const tabStacks = { ...s.tabStacks };
@@ -155,11 +149,24 @@ export function go(id: ScreenId, opts: GoOptions = {}) {
 
   let stack: ScreenId[];
   if (opts.replace) stack = [...s.stack.slice(0, -1), id];
-  else if (dir === "pop" || dir === "instant") {
+  else if (dir === "pop" || dir === "instant" || (dir === "none" && s.stack.includes(id))) {
     const i = s.stack.lastIndexOf(id);
     stack = i >= 0 ? s.stack.slice(0, i + 1) : [...s.stack.slice(0, -1), id];
   } else stack = [...s.stack, id];
   commit({ ...s, id, dir, stack });
+}
+
+/**
+ * Jump anywhere (debug menu, hand-edited link): rebuild the natural stack for the target,
+ * entering or leaving the tabs as needed. Cross-fades.
+ */
+export function jumpTo(id: ScreenId) {
+  const s = useNavState.getState();
+  const tab = naturalTab(id);
+  const tabStacks = tab ? { ...s.tabStacks } : {};
+  if (tab && s.tab && s.tab !== tab) tabStacks[s.tab] = s.stack;
+  if (tab) delete tabStacks[tab];
+  commit({ id, dir: "none", tab, stack: tab ? naturalStack(id) : [id], tabStacks });
 }
 
 /** Where Back goes from the current screen: the previous screen in the stack, else BACK/PARENT. */
@@ -224,7 +231,7 @@ export function initNav() {
   // Someone edited the URL hash by hand: jump there with a cross-fade.
   const onHash = () => {
     const h = location.hash.replace(/^#\/?/, "");
-    if (isScreenId(h) && h !== useNavState.getState().id) go(h, { dir: "none" });
+    if (isScreenId(h) && h !== useNavState.getState().id) jumpTo(h);
   };
   window.addEventListener("hashchange", onHash);
   return () => window.removeEventListener("hashchange", onHash);

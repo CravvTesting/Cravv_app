@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 import { SCREEN_NAMES } from "@/screens/registry";
 import { MOTION, useMotionTokens } from "./motion";
-import { exitToOnboarding, go, useNavState } from "./nav";
+import { exitToOnboarding, jumpTo, useNavState } from "./nav";
 import { SCREEN_IDS, useProto, type Debug } from "./store";
 
 type Opt<K extends keyof Debug> = { value: Debug[K]; label: string };
@@ -161,7 +161,7 @@ export function DebugMenu() {
                   <button
                     key={sid}
                     type="button"
-                    onClick={() => { go(sid, { dir: "none" }); setOpen(false); }}
+                    onClick={() => { jumpTo(sid); setOpen(false); }}
                     className={`flex h-10 items-center gap-2 rounded-[10px] px-2 text-left text-[13px] ${sid === current ? "bg-white/15" : "active:bg-white/10"}`}
                   >
                     <span className="w-9 shrink-0 font-mono text-[12px] text-accent">{sid}</span>
