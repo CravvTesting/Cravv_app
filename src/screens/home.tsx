@@ -10,7 +10,7 @@
 import { useEffect, useRef, useState } from "react";
 import { go } from "@/proto/nav";
 import { useProto } from "@/proto/store";
-import { TAB_BAR_SPACE } from "@/proto/TabBar";
+import { TAB_BAR_SPACE } from "@/proto/ui";
 import { COLLECTIONS, QUICK, TONIGHT, YOUR_RECIPES, greetingFor, mealFor, type Meal } from "./home/data";
 import {
   CollectionTile,

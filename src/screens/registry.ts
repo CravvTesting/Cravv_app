@@ -27,9 +27,37 @@ import S13n from "./s13n";
 import S14 from "./s14";
 import S14b from "./s14b";
 import Home from "./home";
-import Nutrition from "./nutrition";
-import Journal from "./journal";
-import Profile from "./profile";
+import Filters from "./home/Filters";
+import N01 from "./nutrition/N01";
+import N02 from "./nutrition/N02";
+import N02b from "./nutrition/N02b";
+import N03 from "./nutrition/N03";
+import N04 from "./nutrition/N04";
+import N05 from "./nutrition/N05";
+import N05b from "./nutrition/N05b";
+import N06 from "./nutrition/N06";
+import NutritionRoot from "./nutrition/Root";
+import R04 from "./nutrition/R04";
+import R05 from "./nutrition/R05";
+import R06 from "./nutrition/R06";
+import R07 from "./nutrition/R07";
+import R08 from "./nutrition/R08";
+import R09 from "./nutrition/R09";
+import JournalRoot from "./journal/Root";
+import J02 from "./journal/J02";
+import J03 from "./journal/J03";
+import J04 from "./journal/J04";
+import J07 from "./journal/J07";
+import J08 from "./journal/J08";
+import J09 from "./journal/J09";
+import J12 from "./journal/J12";
+import Instacart from "./journal/Instacart";
+import ProfileRoot from "./profile/Root";
+import P02 from "./profile/P02";
+import P03 from "./profile/P03";
+import P04 from "./profile/P04";
+import P05 from "./profile/P05";
+import PlaceholderScreen from "./PlaceholderScreen";
 
 export type ScreenProps = { id: ScreenId };
 
@@ -82,9 +110,62 @@ export const REGISTRY: Record<ScreenId, Entry> = {
   "14": { Component: S14 },
   "14b": { Component: S14b },
   "home": { Component: Home },
-  "nutrition": { Component: Nutrition },
-  "journal": { Component: Journal },
-  "profile": { Component: Profile },
+
+  // Home filter sheet (one sheet; F01 → F02 → F03 are its states)
+  "F01": { Component: Filters, base: "home", group: "filters" },
+  "F02": { Component: Filters, base: "home", group: "filters" },
+  "F03": { Component: Filters, base: "home", group: "filters" },
+
+  // Nutrition
+  "N01": { Component: N01 },
+  "N02": { Component: N02 },
+  "N02b": { Component: N02b, base: "N02" },
+  "N03": { Component: N03 },
+  "N04": { Component: N04 },
+  "N05": { Component: N05 },
+  "N05b": { Component: N05b },
+  "N06": { Component: N06 },
+  "R01": { Component: NutritionRoot, group: "nutrition-root" },
+  "R02": { Component: NutritionRoot, group: "nutrition-root" },
+  "R03": { Component: NutritionRoot, group: "nutrition-root" },
+  "R04": { Component: R04 },
+  "R05": { Component: R05 },
+  "R06": { Component: R06 },
+  "R07": { Component: R07 },
+  "R08": { Component: R08 },
+  "R09": { Component: R09 },
+
+  // Journal (Meal Log / Favourites / Grocery are one root with a segmented control)
+  "J01": { Component: JournalRoot, group: "journal-root" },
+  "J05": { Component: JournalRoot, group: "journal-root" },
+  "J06": { Component: JournalRoot, group: "journal-root" },
+  "J10": { Component: JournalRoot, group: "journal-root" },
+  "J11": { Component: JournalRoot, group: "journal-root" },
+  "J15": { Component: JournalRoot, group: "journal-root" },
+  "J02": { Component: J02 },
+  "J03": { Component: J03, base: "J01" },
+  "J04": { Component: J04 },
+  "J07": { Component: J07 },
+  "J08": { Component: J08, base: "J07" },
+  "J09": { Component: J09 },
+  "J12": { Component: J12, base: "J11" },
+  "J13": { Component: Instacart, group: "instacart" },
+  "J14": { Component: Instacart, group: "instacart" },
+
+  // Profile (P01b/P01c are states of the root)
+  "P01": { Component: ProfileRoot, group: "profile-root" },
+  "P01b": { Component: ProfileRoot, group: "profile-root" },
+  "P01c": { Component: ProfileRoot, group: "profile-root" },
+  "P02": { Component: P02 },
+  "P03": { Component: P03 },
+  "P04": { Component: P04 },
+  "P05": { Component: P05, base: "P01" },
+  // Onboarding 04 / 05 / 11 reused in edit mode (back button instead of step bar, Save)
+  "e04": { Component: S04 },
+  "e05": { Component: S05 },
+  "e11": { Component: S11 },
+
+  "placeholder": { Component: PlaceholderScreen },
 };
 
 /** Human names for the debug menu's Jump to screen list. */
@@ -97,5 +178,16 @@ export const SCREEN_NAMES: Record<ScreenId, string> = {
   "11": "Your stove", "12": "Attach the camera", "12h": "Hood sheet", "13": "Calibrating",
   "13p": "Tara offline", "13r": "Back online", "13s": "Calibrated", "13x": "Sees 3 of 4", "13y": "Sees 5, picked 4",
   "13n": "Turn on alerts", "14": "All set", "14b": "All set, first cook", "home": "Home",
-  "nutrition": "Nutrition", "journal": "Journal", "profile": "Profile",
+  "F01": "Filters", "F02": "Filters · picked", "F03": "Filters · no matches",
+  "N01": "Nutrition · first open", "N02": "About you", "N02b": "Height picker", "N03": "Activity", "N04": "Goal",
+  "N05": "Your targets", "N05b": "How we worked it out", "N06": "Ready, no cooks",
+  "R01": "Nutrition · Today", "R02": "Nutrition · Week", "R03": "Nutrition · Month", "R04": "Meal · Thai Green Curry",
+  "R05": "Log dinner", "R06": "Search food", "R07": "Food detail", "R08": "Edit targets", "R09": "Sodium detail",
+  "J01": "Meal Log", "J02": "Meal detail", "J03": "Log a meal", "J04": "Photo log", "J05": "Meal Log · empty",
+  "J06": "Favourites", "J07": "Collection", "J08": "Save to collections", "J09": "New collection", "J10": "Favourites · empty",
+  "J11": "Grocery", "J12": "Add ingredient", "J13": "Adding to Instacart", "J14": "Cart ready", "J15": "Grocery · empty",
+  "P01": "Profile", "P01b": "Profile · Tara not set up", "P01c": "Profile · Tara offline", "P02": "Stove and camera",
+  "P03": "Safety and alerts", "P04": "Camera and privacy", "P05": "Sign out?",
+  "e04": "Food preferences (edit)", "e05": "How you cook (edit)", "e11": "Your stove (edit)",
+  "placeholder": "Placeholder",
 };

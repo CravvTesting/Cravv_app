@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 import { SCREEN_NAMES } from "@/screens/registry";
 import { MOTION, useMotionTokens } from "./motion";
-import { go, useNavState } from "./nav";
+import { exitToOnboarding, go, useNavState } from "./nav";
 import { SCREEN_IDS, useProto, type Debug } from "./store";
 
 type Opt<K extends keyof Debug> = { value: Debug[K]; label: string };
@@ -37,6 +37,57 @@ function Seg<K extends keyof Debug>({ label, k, options }: { label: string; k: K
         })}
       </div>
     </div>
+  );
+}
+
+/** Segmented row bound to a value in the store (not the debug object). */
+function StoreSeg<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: { value: T; label: string }[]; onChange: (v: T) => void }) {
+  return (
+    <div className="py-2">
+      <p className="mb-1.5 text-[13px] text-secondary">{label}</p>
+      <div className="flex rounded-[10px] bg-secondary-surface p-0.5" role="radiogroup" aria-label={label}>
+        {options.map((o) => {
+          const on = o.value === value;
+          return (
+            <button key={o.value} type="button" role="radio" aria-checked={on} onClick={() => onChange(o.value)}
+              className={`h-8 flex-1 rounded-[8px] px-1 text-[13px] ${on ? "bg-white/25 font-semibold text-white" : "text-white/70"}`}>
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function TabsDebug() {
+  const s = useProto();
+  const taraState = s.setupPending ? "not-set-up" : s.tara.status;
+  const liveState = s.live?.mode ?? "none";
+  const f = s.homeFilters;
+  const filterCount = (f.time !== "any" ? 1 : 0) + f.course.length + f.cuisine.length + f.more.length;
+  const filtersState = filterCount === 0 ? "none" : f.more.includes("one-pot") && f.cuisine.includes("japanese") ? "no-matches" : "some";
+  return (
+    <>
+      <StoreSeg label="Nutrition setup" value={s.nutritionSetup ? "done" : "not"} options={[{ value: "done", label: "Done" }, { value: "not", label: "Not done (N01)" }]}
+        onChange={(v) => s.set({ nutritionSetup: v === "done" })} />
+      <Seg label="Meal Log" k="mealLog" options={[{ value: "persona", label: "Persona" }, { value: "empty", label: "Empty (J05)" }]} />
+      <Seg label="Favourites" k="favourites" options={[{ value: "persona", label: "Persona" }, { value: "empty", label: "Empty (J10)" }]} />
+      <Seg label="Grocery" k="groceryData" options={[{ value: "persona", label: "Persona" }, { value: "empty", label: "Empty (J15)" }]} />
+      <Seg label="Instacart" k="instacart" options={[{ value: "all-added", label: "All added" }, { value: "some-changed", label: "Some changed" }, { value: "some-unavailable", label: "Unavailable" }]} />
+      <StoreSeg label="Tara" value={taraState} options={[{ value: "online", label: "Online" }, { value: "offline", label: "Offline (P01c)" }, { value: "not-set-up", label: "Not set up" }]}
+        onChange={(v) => s.set({ setupPending: v === "not-set-up", tara: { ...s.tara, status: v } })} />
+      <StoreSeg label="Live session" value={liveState} options={[{ value: "none", label: "None" }, { value: "cooking", label: "Cooking" }, { value: "watching", label: "Watching" }]}
+        onChange={(v) => s.set({ live: v === "none" ? null : v === "cooking"
+          ? { mode: "cooking", title: "Rajma Chawal · Step 4 of 9", detail: "Back left · 6:12 · Tara is watching", progress: 0.44 }
+          : { mode: "watching", title: "Pressure cooker", detail: "Back right · 2 of 3 whistles", progress: 0.66 } })} />
+      <Seg label="Over a limit" k="overLimit" options={[{ value: "saturated-fat", label: "Saturated fat" }, { value: "none", label: "Nothing over" }]} />
+      <Seg label="Home · time of day" k="timeOfDay" options={[{ value: "auto", label: "Auto" }, { value: "breakfast", label: "Breakfast" }, { value: "lunch", label: "Lunch" }, { value: "dinner", label: "Dinner" }]} />
+      <StoreSeg label="Home · filters" value={filtersState} options={[{ value: "none", label: "None" }, { value: "some", label: "Some (6)" }, { value: "no-matches", label: "No matches" }]}
+        onChange={(v) => s.set({ homeFilters: v === "none" ? { time: "any", course: [], cuisine: [], more: [] }
+          : v === "some" ? { time: "60", course: ["mains"], cuisine: ["thai"], more: ["hands-off"] }
+          : { time: "15", course: ["mains"], cuisine: ["japanese"], more: ["one-pot"] } })} />
+    </>
   );
 }
 
@@ -131,6 +182,10 @@ export function DebugMenu() {
               <Seg label="Ending" k="ending" options={[{ value: "14", label: "14 All set" }, { value: "14b", label: "14b First cook" }]} />
             </Group>
 
+            <Group title="App tabs">
+              <TabsDebug />
+            </Group>
+
             <Group title="Playback">
               <Seg label="Speed (simulation timers)" k="speed" options={[{ value: 0.5, label: "0.5×" }, { value: 1, label: "1×" }, { value: 2, label: "2×" }]} />
               <Seg label="Slow animations ×5" k="slowAnimations" options={[{ value: false, label: "Off" }, { value: true, label: "On" }]} />
@@ -138,7 +193,7 @@ export function DebugMenu() {
 
             <button
               type="button"
-              onClick={() => { reset(); go("01", { replace: true, dir: "none" }); setOpen(false); }}
+              onClick={() => { reset(); exitToOnboarding("01"); setOpen(false); }}
               className="mt-5 h-[52px] w-full rounded-full bg-secondary-surface text-[17px] font-semibold text-alert"
             >
               Reset prototype
