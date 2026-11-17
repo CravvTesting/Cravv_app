@@ -3,7 +3,7 @@
 import { useId, type ReactNode } from "react";
 import { Icon, type IconName } from "./Icon";
 import { Switch } from "./Switch";
-import { cx } from "./utils";
+import { cx, PRESS } from "./utils";
 
 export type SettingsRowType = "navigation" | "value" | "two-line" | "switch" | "destructive";
 
@@ -76,7 +76,7 @@ export function SettingsRow({
 
   if (type === "destructive") {
     return (
-      <button type="button" onClick={onPress} disabled={disabled} className={cx(base, "justify-center active:bg-white/5 disabled:opacity-40")} style={bg}>
+      <button type="button" onClick={onPress} disabled={disabled} className={cx(base, "justify-center disabled:opacity-40", PRESS)} style={bg}>
         {separator && <RowSeparator inset={0} />}
         <span className="text-[17px] leading-[22px]" style={{ color: "var(--cravv-status-alert)" }}>
           {label}
@@ -126,7 +126,7 @@ export function SettingsRow({
     );
   }
   return (
-    <button type="button" onClick={onPress} disabled={disabled} className={cx(base, "active:bg-white/5 disabled:opacity-40")} style={bg}>
+    <button type="button" onClick={onPress} disabled={disabled} className={cx(base, PRESS, "disabled:opacity-40")} style={bg}>
       {inner}
     </button>
   );
