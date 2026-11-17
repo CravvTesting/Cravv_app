@@ -3,12 +3,14 @@
 /*
  * 04 · Your kitchen (2525:2595). Diet multi-select (Everything clears the others and vice versa),
  * allergies multi-select with the Avoid state ("None" clears them), cuisines multi-select.
+ * As "e04" (Profile → Food preferences): edit mode, back button instead of the step bar, Save → back.
  */
 import type { ReactNode } from "react";
 import { ALLERGIES, Chip, CUISINES, DIETS, PrimaryButton, SectionTitle } from "@/components/cravv";
-import { go } from "@/proto/nav";
+import { back, go } from "@/proto/nav";
 import { useProto } from "@/proto/store";
 import { Screen, ScreenHeader } from "@/proto/ui";
+import type { ScreenProps } from "./registry";
 
 function Group({ title, action, children, className }: { title: string; action?: ReactNode; children: ReactNode; className?: string }) {
   const id = `sec-${title.toLowerCase()}`;
@@ -25,7 +27,8 @@ function Group({ title, action, children, className }: { title: string; action?:
   );
 }
 
-export default function S04() {
+export default function S04({ id }: ScreenProps) {
+  const edit = id === "e04";
   const diet = useProto((s) => s.diet);
   const allergies = useProto((s) => s.allergies);
   const cuisines = useProto((s) => s.cuisines);
@@ -41,7 +44,10 @@ export default function S04() {
   };
 
   return (
-    <Screen header={<ScreenHeader steps={3} current={2} />} footer={<PrimaryButton onClick={() => go("05")}>Continue</PrimaryButton>}>
+    <Screen
+      header={edit ? <ScreenHeader /> : <ScreenHeader steps={3} current={2} />}
+      footer={<PrimaryButton onClick={() => (edit ? back() : go("05"))}>{edit ? "Save" : "Continue"}</PrimaryButton>}
+    >
       <h1 className="text-[34px] font-bold leading-[41px] tracking-[0.4px] text-white">Your kitchen</h1>
       <p className="mt-[5px] text-[17px] leading-[22px] tracking-[-0.43px] text-secondary">Tara only suggests recipes that fit.</p>
 
