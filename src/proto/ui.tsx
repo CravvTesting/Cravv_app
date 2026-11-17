@@ -131,7 +131,7 @@ export function SystemAlert({ title, message, actions }: { title: string; messag
         aria-modal="true"
         aria-label={title}
         className="relative w-[270px] overflow-hidden rounded-[14px] text-center backdrop-blur-2xl"
-        style={{ background: "rgba(30,30,30,0.75)" }}
+        style={{ background: "rgba(44,44,46,0.96)" }}
         initial={{ opacity: 0, scale: m.reduced ? 1 : 1.15 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: m.reduced ? 1 : 0.95 }}
@@ -150,7 +150,7 @@ export function SystemAlert({ title, message, actions }: { title: string; messag
               className={cx(
                 "h-11 text-[17px] active:bg-white/10",
                 a.bold && "font-semibold",
-                a.destructive ? "text-alert" : "text-info",
+                a.destructive ? "text-alert" : "text-[#0A84FF]", // iOS system blue: system chrome, not a Cravv token
                 i > 0 && (row ? "border-l border-white/15" : "border-t border-white/15")
               )}
             >
