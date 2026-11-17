@@ -1,7 +1,7 @@
 /* Tara service worker.
    - Navigations: network first, cached copy when offline.
    - Static assets (/_next/static, /img, /icons): cache first. */
-const VERSION = "tara-v3";
+const VERSION = "tara-v4";
 const PRECACHE = ["/", "/manifest.webmanifest", "/icons/icon-192.png"];
 
 self.addEventListener("install", (event) => {

@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   description: "Tara watches the stove while you cook.",
   applicationName: "Tara",
   appleWebApp: { capable: true, title: "Tara", statusBarStyle: "black-translucent" },
+  // Next only emits the generic `mobile-web-app-capable`; iOS still needs the apple- one for the
+  // black-translucent status bar (content running under the clock and battery).
+  other: { "apple-mobile-web-app-capable": "yes" },
   icons: {
     icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
