@@ -1,0 +1,84 @@
+/* Home tab: compositor-only effects (transform/opacity), CSS transitions and keyframes. */
+
+/* iOS-like press: quick scale-down on touch, soft settle on release. */
+.press {
+  transition:
+    transform calc(0.32s * var(--motion-scale)) var(--ease-ios),
+    opacity calc(0.32s * var(--motion-scale)) var(--ease-ios);
+  -webkit-tap-highlight-color: transparent;
+}
+.press:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+  transition-duration: calc(0.08s * var(--motion-scale));
+}
+
+/* Horizontal rails: native momentum + snap, no scrollbar, first item on the 20px margin. */
+.rail {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 20px;
+  padding-inline: 20px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+.rail > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+/* Chips row scrolls too on narrow phones, but without snapping. */
+.rail.noSnap {
+  scroll-snap-type: none;
+}
+
+/* Meal icons are the Figma SVGs used as masks so the colour follows the selection. */
+.maskIcon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  background-color: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
+
+/* "Sent to Tara": rise + fade in, hold, fade out. ~2 s. */
+@keyframes toast {
+  0% { opacity: 0; transform: translateY(12px) scale(0.96); }
+  12% { opacity: 1; transform: translateY(0) scale(1); }
+  85% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(4px) scale(0.98); }
+}
+.toast {
+  animation: toast calc(2s * var(--motion-scale)) var(--ease-ios) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .press, .press:active { transition: opacity 0.1s linear; transform: none; }
+  @keyframes toastReduced {
+    0%, 100% { opacity: 0; }
+    10%, 88% { opacity: 1; }
+  }
+  .toast { animation-name: toastReduced; }
+}
+
+/* Rows inside a grouped list dim instead of scaling. */
+.pressDim {
+  transition: opacity calc(0.25s * var(--motion-scale)) var(--ease-ios);
+  -webkit-tap-highlight-color: transparent;
+}
+.pressDim:active {
+  opacity: 0.55;
+  transition-duration: calc(0.06s * var(--motion-scale));
+}
+
+/* A card with its own button inside: don't press the card when the inner button is pressed. */
+.press:has(button:active):active {
+  transform: none;
+  opacity: 1;
+}
