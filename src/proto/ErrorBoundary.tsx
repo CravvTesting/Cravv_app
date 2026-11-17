@@ -1,6 +1,7 @@
 "use client";
 
 import { Component, useEffect, useState, type ReactNode } from "react";
+import { diag } from "./telemetry";
 
 /*
  * Never go black. If a screen throws, show what happened (so it can be screenshotted and
@@ -33,7 +34,7 @@ function ErrorScreen({ message, stack }: { message: string; stack?: string }) {
 export class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null };
   static getDerivedStateFromError(error: Error) { return { error }; }
-  componentDidCatch(error: Error) { console.error("[tara]", error); }
+  componentDidCatch(error: Error) { console.error("[tara]", error); diag("react-error", { message: error.message, stack: error.stack?.slice(0, 1500) }); }
   render() {
     if (this.state.error) return <ErrorScreen message={String(this.state.error.message || this.state.error)} stack={this.state.error.stack} />;
     return this.props.children;

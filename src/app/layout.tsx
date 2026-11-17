@@ -6,7 +6,10 @@ export const metadata: Metadata = {
   title: "Tara",
   description: "Tara watches the stove while you cook.",
   applicationName: "Tara",
-  appleWebApp: { capable: true, title: "Tara", statusBarStyle: "black-translucent" },
+  // iOS 26.1+ no longer draws black-translucent as transparent for Home Screen apps (it adds a
+  // scrim and still reserves the strip), so use the default bar tinted with theme-color, which
+  // matches the top of every screen (#1c1c1f).
+  appleWebApp: { capable: true, title: "Tara", statusBarStyle: "default" },
   // Next only emits the generic `mobile-web-app-capable`; iOS still needs the apple- one for the
   // black-translucent status bar (content running under the clock and battery).
   other: { "apple-mobile-web-app-capable": "yes" },

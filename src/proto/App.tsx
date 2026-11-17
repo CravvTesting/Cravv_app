@@ -9,6 +9,7 @@ import { BACK, go, initNav, useNavState, type Direction } from "./nav";
 import { useProto, type ScreenId } from "./store";
 import { warmImages } from "./warmImages";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { startTelemetry } from "./telemetry";
 
 /*
  * iOS-style navigation stack.
@@ -87,6 +88,7 @@ export function App() {
       setLayers([newLayer(pageOf(useNavState.getState().id))]);
       setReady(true);
       warmImages();
+      startTelemetry();
     };
     if (useProto.persist.hasHydrated()) start();
     else {
@@ -175,7 +177,7 @@ export function App() {
       await settled(anims, (p.dir === "none" ? 220 : MOTION.pageMs) * m.scale + 400);
       // Settle: clear inline styles, drop the outgoing layer.
       inEl.style.transform = ""; inEl.style.opacity = ""; inEl.style.zIndex = ""; inEl.style.willChange = "";
-      if (inDim) inDim.style.opacity = "";
+      if (inDim) inDim.style.opacity = "0";
       anims.forEach((a) => { try { a.cancel(); } catch { /* ignore */ } });
       running.current = [];
       busy.current = false;
@@ -251,7 +253,7 @@ export function App() {
     running.current = anims;
     await settled(anims, ms * m.scale + 400);
     if (under) { under.style.transform = ""; under.style.willChange = ""; delete under.dataset.placed; }
-    if (dim) dim.style.opacity = "";
+    if (dim) dim.style.opacity = "0";
     if (top) { top.style.transform = ""; top.style.willChange = ""; }
     anims.forEach((a) => { try { a.cancel(); } catch { /* ignore */ } });
     running.current = [];
@@ -282,6 +284,8 @@ export function App() {
               key={l.key}
               ref={(el) => { if (el) pageEls.current.set(l.key, el); else pageEls.current.delete(l.key); }}
               className="absolute inset-0 overflow-hidden"
+              data-layer={l.key}
+              data-page={l.pageId}
               style={{ zIndex: i + 1 }}
               aria-hidden={!isTop || undefined}
               inert={!isTop || undefined}
@@ -289,6 +293,7 @@ export function App() {
               <ErrorBoundary><Component id={l.pageId} /></ErrorBoundary>
               <div
                 ref={(el) => { if (el) dimEls.current.set(l.key, el); else dimEls.current.delete(l.key); }}
+                data-dim
                 className="pointer-events-none absolute inset-0 z-[60] bg-black"
                 style={{ opacity: 0 }}
                 aria-hidden
