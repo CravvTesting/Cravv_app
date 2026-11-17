@@ -150,6 +150,7 @@ export function App() {
     const outDim = dimEls.current.get(p.outKey);
     if (!inEl || !outEl) return;
     busy.current = true;
+    const inZ0 = inEl.style.zIndex; // React's value; restored after the transition
     inEl.style.willChange = "transform"; outEl.style.willChange = "transform";
 
     // Initial state before the first paint, so nothing flashes.
@@ -175,8 +176,10 @@ export function App() {
       }
       running.current = anims;
       await settled(anims, (p.dir === "none" ? 220 : MOTION.pageMs) * m.scale + 400);
-      // Settle: clear inline styles, drop the outgoing layer.
-      inEl.style.transform = ""; inEl.style.opacity = ""; inEl.style.zIndex = ""; inEl.style.willChange = "";
+      // Settle. Hide the outgoing screen FIRST: cancelling its animation would otherwise snap
+      // it back to x=0 on top for a frame before React removes it (the "flash").
+      outEl.style.visibility = "hidden";
+      inEl.style.transform = ""; inEl.style.opacity = ""; inEl.style.zIndex = inZ0; inEl.style.willChange = "";
       if (inDim) inDim.style.opacity = "0";
       anims.forEach((a) => { try { a.cancel(); } catch { /* ignore */ } });
       running.current = [];
@@ -190,15 +193,24 @@ export function App() {
   const backTo = BACK[id];
   const isOverlay = !!REGISTRY[id].base;
 
+  // A touch near the left edge is only a *candidate*; the swipe starts once the finger has moved
+  // sideways. Taps (e.g. on the back button) never mount the screen underneath.
+  const candidate = useRef<{ x0: number; y0: number; t0: number; pointerId: number } | null>(null);
+
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (!ready || busy.current || isOverlay || !backTo || layers.length !== 1) return;
     const left = e.currentTarget.getBoundingClientRect().left;
     if (e.clientX - left > EDGE) return;
+    if ((e.target as HTMLElement).closest("button, a, input, textarea, [role=radio], [role=button]")) return;
+    candidate.current = { x0: e.clientX, y0: e.clientY, t0: e.timeStamp, pointerId: e.pointerId };
+  };
+
+  const beginSwipe = (e: ReactPointerEvent<HTMLDivElement>, c: { x0: number; t0: number }) => {
     const top = layers[0];
-    const under = newLayer(pageOf(backTo));
+    const under = newLayer(pageOf(backTo!));
     busy.current = true;
-    drag.current = { x0: e.clientX, lastX: e.clientX, lastT: e.timeStamp, v: 0, dx: 0, topKey: top.key, underKey: under.key };
-    e.currentTarget.setPointerCapture(e.pointerId);
+    drag.current = { x0: c.x0, lastX: e.clientX, lastT: e.timeStamp, v: 0, dx: Math.max(0, e.clientX - c.x0), topKey: top.key, underKey: under.key };
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* ignore */ }
     setLayers([under, top]);
   };
 
@@ -219,6 +231,13 @@ export function App() {
   }, [layers, w]);
 
   const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const c = candidate.current;
+    if (c && !drag.current) {
+      const dx = e.clientX - c.x0, dy = Math.abs(e.clientY - c.y0);
+      if (dy > 12 && dy > dx) { candidate.current = null; return; } // vertical scroll, not a swipe
+      if (dx > 8 && dx > dy) { candidate.current = null; beginSwipe(e, c); }
+      return;
+    }
     const d = drag.current;
     if (!d) return;
     const dx = Math.max(0, Math.min(w, e.clientX - d.x0));
@@ -234,6 +253,7 @@ export function App() {
   };
 
   const onPointerUp = async () => {
+    candidate.current = null;
     const d = drag.current;
     if (!d) return;
     drag.current = null;
@@ -252,6 +272,9 @@ export function App() {
     if (dim) anims.push(dim.animate([{ opacity: DIM * (1 - d.dx / w) }, { opacity: commit ? 0 : DIM }], o));
     running.current = anims;
     await settled(anims, ms * m.scale + 400);
+    // Hide the screen that's leaving first, so resetting transforms can't flash it.
+    if (commit && top) top.style.visibility = "hidden";
+    if (!commit && under) under.style.visibility = "hidden";
     if (under) { under.style.transform = ""; under.style.willChange = ""; delete under.dataset.placed; }
     if (dim) dim.style.opacity = "0";
     if (top) { top.style.transform = ""; top.style.willChange = ""; }
