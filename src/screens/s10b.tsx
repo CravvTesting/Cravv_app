@@ -48,7 +48,7 @@ export default function S10b() {
   const swap = m.reduced ? { opacity: 0 } : { opacity: 0, scale: 0.8 };
 
   return (
-    <Screen header={<ScreenHeader steps={4} current={1} onBack={() => back("10")} />}>
+    <Screen header={<ScreenHeader steps={4} current={2} onBack={() => back("10")} />}>
       <h1 className="text-[34px] font-bold leading-[41px] tracking-[0.4px]">Updating Tara</h1>
       <p className="mt-[5px] text-[15px] leading-5 text-secondary">Keep Tara plugged in. This takes about 2 minutes.</p>
 
