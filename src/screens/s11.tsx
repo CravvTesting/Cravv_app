@@ -3,6 +3,8 @@
 /*
  * 11 · Your stove. "Tara is online" pill slides in (motion moment 6), stove type single-select,
  * Burners 1–5 bound to the store; the preview plan morphs with the count (motion moment 7).
+ * As "e11" (Profile → Stove and camera → Type/Burners): edit mode, back button instead of the
+ * step bar; Save runs calibration again (→ 13), per TABS_HANDOFF P02.
  */
 import { motion } from "motion/react";
 import { ListGroup, ListRow, PrimaryButton, SectionTitle, SegmentedControl, StatusPill, StovePreview, STOVE_TYPES } from "@/components/cravv";
@@ -10,10 +12,12 @@ import { useMotionTokens } from "@/proto/motion";
 import { go } from "@/proto/nav";
 import { useProto, type Burners } from "@/proto/store";
 import { Screen, ScreenHeader } from "@/proto/ui";
+import type { ScreenProps } from "./registry";
 
 const BURNERS = [1, 2, 3, 4, 5] as const satisfies readonly Burners[];
 
-export default function S11() {
+export default function S11({ id }: ScreenProps) {
+  const edit = id === "e11";
   const m = useMotionTokens();
   const stoveType = useProto((s) => s.stoveType);
   const burners = useProto((s) => s.burners);
@@ -23,8 +27,8 @@ export default function S11() {
 
   return (
     <Screen
-      header={<ScreenHeader steps={4} current={3} />}
-      footer={<PrimaryButton onClick={() => go("12")}>Continue</PrimaryButton>}
+      header={edit ? <ScreenHeader /> : <ScreenHeader steps={4} current={3} />}
+      footer={<PrimaryButton onClick={() => go(edit ? "13" : "12")}>{edit ? "Save" : "Continue"}</PrimaryButton>}
     >
       <h1 className="text-[34px] font-bold leading-[41px] tracking-[0.4px]">Your Stove</h1>
       <motion.div
