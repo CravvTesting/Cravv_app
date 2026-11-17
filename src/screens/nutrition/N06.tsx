@@ -35,7 +35,7 @@ export default function N06() {
   }, [set]);
 
   return (
-    <LargeTitleScreen title="Nutrition" subtitle="From what you cook with Tara.">
+    <LargeTitleScreen tabRoot title="Nutrition" subtitle="From what you cook with Tara.">
       {/* This week · empty */}
       <section aria-label="This week" className="-mt-1 rounded-[20px] bg-raised px-4 pb-3.5 pt-4">
         <div className="flex items-start justify-between">

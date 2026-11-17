@@ -55,7 +55,7 @@ export const PARENT: Partial<Record<ScreenId, ScreenId>> = {
 /** Screens that show the tab bar (tab roots, their segments/states, and sheets over them). */
 export const TAB_ROOT_SCREENS: ReadonlySet<ScreenId> = new Set<ScreenId>([
   "home", "F01", "F02", "F03",
-  "R01", "R02", "R03",
+  "N01", "N06", "R01", "R02", "R03",
   "J01", "J05", "J06", "J10", "J11", "J15", "J03", "J12",
   "P01", "P01b", "P01c", "P05",
 ]);

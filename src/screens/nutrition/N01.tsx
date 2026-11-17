@@ -27,7 +27,7 @@ export default function N01() {
   };
 
   return (
-    <LargeTitleScreen
+    <LargeTitleScreen tabRoot
       title="Nutrition"
       subtitle="Targets sized to you, tracked from every cook."
       footer={
