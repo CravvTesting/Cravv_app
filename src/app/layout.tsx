@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { ServiceWorker } from "@/components/ServiceWorker";
+import { ServiceWorker } from "@/proto/ServiceWorker";
 
 export const metadata: Metadata = {
   title: "Tara",
@@ -17,6 +17,8 @@ export const viewport: Viewport = {
   themeColor: "#1c1c1f",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
   colorScheme: "dark",
 };
@@ -24,7 +26,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className="app-bg">
+      <body className="cravv-bg">
         {children}
         <ServiceWorker />
       </body>
