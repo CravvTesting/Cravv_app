@@ -49,6 +49,21 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
+/** What iOS is giving us: standalone (home-screen app)? how big is the top safe area? */
+function DeviceInfo() {
+  const [info, setInfo] = useState("");
+  useEffect(() => {
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:fixed;top:0;left:0;height:env(safe-area-inset-top);width:env(safe-area-inset-bottom);visibility:hidden";
+    document.body.appendChild(probe);
+    const top = probe.offsetHeight, bottom = probe.offsetWidth;
+    probe.remove();
+    const standalone = (navigator as Navigator & { standalone?: boolean }).standalone ?? matchMedia("(display-mode: standalone)").matches;
+    setInfo(`standalone: ${standalone ? "yes" : "no"} · safe area top ${top}px, bottom ${bottom}px · viewport ${innerWidth}×${innerHeight}`);
+  }, []);
+  return <p className="mt-4 text-center font-mono text-[11px] text-white/50">{info}</p>;
+}
+
 export function DebugMenu() {
   const [open, setOpen] = useState(false);
   const current = useNavState((s) => s.id);
@@ -128,6 +143,7 @@ export function DebugMenu() {
             >
               Reset prototype
             </button>
+            <DeviceInfo />
             <p className="mt-3 text-center text-[12px] text-white/40">Three-finger tap or ?debug=1 opens this menu. Shift+D on desktop.</p>
           </motion.div>
         </div>

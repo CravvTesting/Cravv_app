@@ -1,5 +1,11 @@
 import { App } from "@/proto/App";
+import { ErrorBoundary, GlobalErrors } from "@/proto/ErrorBoundary";
 
 export default function Page() {
-  return <App />;
+  return (
+    <ErrorBoundary>
+      <App />
+      <GlobalErrors />
+    </ErrorBoundary>
+  );
 }

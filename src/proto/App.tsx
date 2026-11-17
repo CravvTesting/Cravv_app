@@ -8,6 +8,7 @@ import { MOTION, useMotionTokens } from "./motion";
 import { BACK, go, initNav, useNavState, type Direction } from "./nav";
 import { useProto, type ScreenId } from "./store";
 import { warmImages } from "./warmImages";
+import { ErrorBoundary } from "./ErrorBoundary";
 
 /*
  * iOS-style navigation stack.
@@ -51,7 +52,18 @@ function usePageWidth() {
 }
 
 /** Two frames: the first runs before the next paint, the second after it. */
-const afterPaint = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+const afterPaint = () =>
+  Promise.race([
+    new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))),
+    new Promise<void>((r) => setTimeout(r, 120)), // rAF can be throttled; never wait on it forever
+  ]);
+
+/** Resolves when all animations finish, or after `ms` as a safety net (never leave a screen stuck). */
+const settled = (anims: Animation[], ms: number) =>
+  Promise.race([
+    Promise.all(anims.map((a) => a.finished)).then(() => undefined, () => undefined),
+    new Promise<void>((r) => setTimeout(r, ms)),
+  ]);
 
 export function App() {
   const [ready, setReady] = useState(false);
@@ -136,6 +148,7 @@ export function App() {
     const outDim = dimEls.current.get(p.outKey);
     if (!inEl || !outEl) return;
     busy.current = true;
+    inEl.style.willChange = "transform"; outEl.style.willChange = "transform";
 
     // Initial state before the first paint, so nothing flashes.
     if (p.dir === "push") { inEl.style.transform = tx(w); inEl.style.zIndex = "2"; outEl.style.zIndex = "1"; }
@@ -159,16 +172,16 @@ export function App() {
         anims.push(outEl.animate([{ opacity: 1 }, { opacity: 0 }], o));
       }
       running.current = anims;
-      try { await Promise.all(anims.map((a) => a.finished)); } catch { /* finished early or cancelled */ }
+      await settled(anims, (p.dir === "none" ? 220 : MOTION.pageMs) * m.scale + 400);
       // Settle: clear inline styles, drop the outgoing layer.
-      inEl.style.transform = ""; inEl.style.opacity = ""; inEl.style.zIndex = "";
+      inEl.style.transform = ""; inEl.style.opacity = ""; inEl.style.zIndex = ""; inEl.style.willChange = "";
       if (inDim) inDim.style.opacity = "";
       anims.forEach((a) => { try { a.cancel(); } catch { /* ignore */ } });
       running.current = [];
       busy.current = false;
       setLayers((ls) => ls.filter((l) => l.key === p.inKey || ls.indexOf(l) > ls.findIndex((x) => x.key === p.inKey)));
     })();
-  }, [layers, opts, w]);
+  }, [layers, opts, w, m.scale]);
 
   // ----- interactive edge swipe -----
   const drag = useRef<{ x0: number; lastX: number; lastT: number; v: number; dx: number; topKey: string; underKey: string } | null>(null);
@@ -195,6 +208,9 @@ export function App() {
     const dim = dimEls.current.get(d.underKey);
     if (under && !under.dataset.placed) {
       under.dataset.placed = "1";
+      under.style.willChange = "transform";
+      const top = pageEls.current.get(d.topKey);
+      if (top) top.style.willChange = "transform";
       under.style.transform = tx(-w * MOTION.parallax + d.dx * MOTION.parallax);
       if (dim) dim.style.opacity = String(DIM * (1 - d.dx / w));
     }
@@ -233,10 +249,10 @@ export function App() {
     if (under) anims.push(under.animate([{ transform: tx(underFrom) }, { transform: tx(commit ? 0 : -w * MOTION.parallax) }], o));
     if (dim) anims.push(dim.animate([{ opacity: DIM * (1 - d.dx / w) }, { opacity: commit ? 0 : DIM }], o));
     running.current = anims;
-    try { await Promise.all(anims.map((a) => a.finished)); } catch { /* ignore */ }
-    if (under) { under.style.transform = ""; delete under.dataset.placed; }
+    await settled(anims, ms * m.scale + 400);
+    if (under) { under.style.transform = ""; under.style.willChange = ""; delete under.dataset.placed; }
     if (dim) dim.style.opacity = "";
-    if (top) top.style.transform = "";
+    if (top) { top.style.transform = ""; top.style.willChange = ""; }
     anims.forEach((a) => { try { a.cancel(); } catch { /* ignore */ } });
     running.current = [];
     busy.current = false;
@@ -266,11 +282,11 @@ export function App() {
               key={l.key}
               ref={(el) => { if (el) pageEls.current.set(l.key, el); else pageEls.current.delete(l.key); }}
               className="absolute inset-0 overflow-hidden"
-              style={{ zIndex: i + 1, willChange: "transform", boxShadow: isTop && layers.length > 1 ? "-10px 0 30px rgba(0,0,0,0.45)" : undefined }}
+              style={{ zIndex: i + 1 }}
               aria-hidden={!isTop || undefined}
               inert={!isTop || undefined}
             >
-              <Component id={l.pageId} />
+              <ErrorBoundary><Component id={l.pageId} /></ErrorBoundary>
               <div
                 ref={(el) => { if (el) dimEls.current.set(l.key, el); else dimEls.current.delete(l.key); }}
                 className="pointer-events-none absolute inset-0 z-[60] bg-black"
@@ -280,7 +296,7 @@ export function App() {
             </div>
           );
         })}
-        <AnimatePresence>{Overlay && <Overlay key={id} id={id} />}</AnimatePresence>
+        <ErrorBoundary><AnimatePresence>{Overlay && <Overlay key={id} id={id} />}</AnimatePresence></ErrorBoundary>
         <DebugMenu />
       </div>
     </MotionConfig>

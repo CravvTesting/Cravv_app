@@ -1,5 +1,7 @@
 "use client";
 
+import { useLayoutEffect, useState } from "react";
+
 /* eslint-disable @next/next/no-img-element */
 /*
  * 01 · Meet Tara (Figma 2525:2470). Hero photo with callouts, Get Started → 02, Sign In → 02b.
@@ -17,6 +19,13 @@ const HERO_FADE =
 export default function S01() {
   const m = useMotionTokens();
   // Callouts and leader lines fade in after the page lands.
+  const [stageScale, setStageScale] = useState(1);
+  useLayoutEffect(() => {
+    const read = () => setStageScale(Math.min(window.innerWidth, 440) / 402);
+    read();
+    window.addEventListener("resize", read);
+    return () => window.removeEventListener("resize", read);
+  }, []);
   const reveal = (i: number) => ({
     initial: { opacity: 0 },
     animate: { opacity: 1 },
@@ -26,6 +35,7 @@ export default function S01() {
   return (
     <Screen
       bleed
+      contentClassName="overflow-hidden"
       footer={
         <div className="flex flex-col gap-1.5">
           <PrimaryButton onClick={() => go("02")}>Get Started</PrimaryButton>
@@ -33,11 +43,20 @@ export default function S01() {
         </div>
       }
     >
-      <div className="relative h-[600px] w-full overflow-hidden">
+      {/* No scrolling: the hero takes whatever height is left. The 402×600 frame is a "stage"
+          pinned to the bottom of that space and scaled to the screen width, so photo and
+          annotations stay aligned; short screens crop its top, tall ones blend into the page. */}
+      <div className="flex h-full flex-col">
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+      <div
+        className="absolute bottom-0 left-1/2 h-[600px] w-[402px]"
+        style={{ transform: `translateX(-50%) scale(${stageScale})`, transformOrigin: "50% 100%" }}
+      >
         <img src="/img/entry/hero-01.webp" alt="Tara on a kitchen counter" className="absolute inset-0 size-full object-cover" />
         <div aria-hidden className="absolute inset-0" style={{ backgroundImage: HERO_FADE }} />
-        {/* Annotation layer, laid out on the 402px frame and centred so it tracks the photo. */}
-        <div aria-hidden className="absolute top-0 left-1/2 h-full w-[402px] -translate-x-1/2">
+        <div aria-hidden className="absolute inset-x-0 top-0 h-24" style={{ background: "linear-gradient(180deg, #1c1c1f, rgba(28,28,31,0))" }} />
+        {/* Annotation layer, laid out on the 402px frame. */}
+        <div aria-hidden className="absolute inset-0">
           <motion.p
             {...reveal(0)}
             className="absolute top-[70px] w-full text-center text-[10px] font-medium uppercase leading-[14px] tracking-[0.4px] whitespace-pre text-white/50"
@@ -56,9 +75,11 @@ export default function S01() {
           </motion.div>
         </div>
       </div>
-      <div className="relative -mt-1 px-5 pb-4 text-center">
+      </div>
+      <div className="relative -mt-1 shrink-0 px-5 pb-4 text-center">
         <h1 className="text-[40px] font-bold leading-[46px] tracking-[0.37px] text-white">Meet Tara</h1>
         <p className="mt-2 text-[17px] leading-[22px] tracking-[-0.43px] text-secondary">She watches the stove while you cook.</p>
+      </div>
       </div>
     </Screen>
   );
