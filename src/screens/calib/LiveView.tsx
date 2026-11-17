@@ -61,7 +61,7 @@ function Brackets({ tone, breathe }: { tone: LiveTone; breathe: boolean }) {
 /** Small dark glass pill used on the camera feed. */
 export function FeedPill({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`flex h-7 items-center gap-1.5 rounded-[14px] bg-black/50 pl-2.5 pr-3 whitespace-nowrap text-white backdrop-blur-[7px] ${className}`}>
+    <div className={`flex h-7 items-center gap-1.5 rounded-[14px] bg-black/60 pl-2.5 pr-3 whitespace-nowrap text-white  ${className}`}>
       {children}
     </div>
   );

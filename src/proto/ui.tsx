@@ -4,8 +4,8 @@
  * App-shell building blocks for screens: Screen layout, Sheet and SystemAlert overlays.
  * Visual components from the Figma library live in @/components/cravv.
  */
-import { motion, type PanInfo } from "motion/react";
-import type { ReactNode } from "react";
+import { motion } from "motion/react";
+import { useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { BackButton, StepProgress } from "@/components/cravv";
 import { MOTION, useMotionTokens } from "./motion";
 import { back as navBack } from "./nav";
@@ -74,6 +74,9 @@ function Dim({ onClick }: { onClick?: () => void }) {
  * Bottom sheet (02/02b, 07h, 08x, 09x, 12h). Rises from the bottom with the dim fading in;
  * drag down or tap the dim to dismiss when `onDismiss` is given.
  * Render it from an overlay screen; App's AnimatePresence plays the exit.
+ *
+ * Enter/exit animate a full `transform` string and opacity, which Motion hands to the Web
+ * Animations API (compositor thread). The drag writes transforms directly, no React renders.
  */
 export function Sheet({
   children,
@@ -89,9 +92,39 @@ export function Sheet({
   className?: string;
 }) {
   const m = useMotionTokens();
-  const onDragEnd = (_: unknown, info: PanInfo) => {
-    if (onDismiss && (info.offset.y > 120 || info.velocity.y > 600)) onDismiss();
+  const dragEl = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ y0: number; dy: number; lastY: number; lastT: number; v: number } | null>(null);
+  const ease = { duration: 0.5 * m.scale, ease: [0.32, 0.72, 0, 1] as const };
+
+  const onDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!onDismiss) return;
+    drag.current = { y0: e.clientY, dy: 0, lastY: e.clientY, lastT: e.timeStamp, v: 0 };
   };
+  const onMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d || !dragEl.current) return;
+    const raw = e.clientY - d.y0;
+    if (raw > 6 && !e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.setPointerCapture(e.pointerId);
+    d.dy = raw > 0 ? raw : raw / 4; // rubber-band upwards
+    d.v = (e.clientY - d.lastY) / Math.max(1, e.timeStamp - d.lastT);
+    d.lastY = e.clientY; d.lastT = e.timeStamp;
+    dragEl.current.style.transform = `translate3d(0,${d.dy}px,0)`;
+  };
+  const onUp = () => {
+    const d = drag.current;
+    drag.current = null;
+    const el = dragEl.current;
+    if (!d || !el) return;
+    if (onDismiss && (d.dy > 120 || (d.v > 0.5 && d.dy > 10))) {
+      onDismiss();
+      return;
+    }
+    el.animate([{ transform: `translate3d(0,${d.dy}px,0)` }, { transform: "translate3d(0,0,0)" }], {
+      duration: 350 * m.scale, easing: "cubic-bezier(0.32, 0.72, 0, 1)",
+    });
+    el.style.transform = "";
+  };
+
   return (
     <div className="absolute inset-0 z-40 flex flex-col justify-end">
       {dim && <Dim onClick={onDismiss} />}
@@ -99,19 +132,24 @@ export function Sheet({
         role="dialog"
         aria-modal="true"
         aria-label={label}
-        className={cx("relative mx-2 overflow-hidden rounded-[38px] bg-recessed", className)}
-        style={{ marginBottom: "max(calc(env(safe-area-inset-bottom) - 26px), 8px)", paddingBottom: "max(env(safe-area-inset-bottom), 20px)" }}
-        initial={m.reduced ? { opacity: 0 } : { y: "100%" }}
-        animate={m.reduced ? { opacity: 1 } : { y: 0 }}
-        exit={m.reduced ? { opacity: 0 } : { y: "110%" }}
-        transition={m.sheet}
-        drag={onDismiss ? "y" : false}
-        dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={{ top: 0, bottom: 0.6 }}
-        onDragEnd={onDragEnd}
-        layout
+        className="relative mx-2"
+        style={{ marginBottom: "max(calc(env(safe-area-inset-bottom) - 26px), 8px)", willChange: "transform" }}
+        initial={m.reduced ? { opacity: 0 } : { transform: "translateY(100%)" }}
+        animate={m.reduced ? { opacity: 1 } : { transform: "translateY(0%)" }}
+        exit={m.reduced ? { opacity: 0 } : { transform: "translateY(110%)" }}
+        transition={m.reduced ? m.fade : ease}
       >
-        {children}
+        <div
+          ref={dragEl}
+          className={cx("overflow-hidden rounded-[38px] bg-recessed", className)}
+          style={{ paddingBottom: "max(env(safe-area-inset-bottom), 20px)", touchAction: onDismiss ? "none" : undefined }}
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerCancel={onUp}
+        >
+          {children}
+        </div>
       </motion.section>
     </div>
   );
@@ -132,10 +170,10 @@ export function SystemAlert({ title, message, actions }: { title: string; messag
         aria-label={title}
         className="relative w-[270px] overflow-hidden rounded-[14px] text-center backdrop-blur-2xl"
         style={{ background: "rgba(44,44,46,0.96)" }}
-        initial={{ opacity: 0, scale: m.reduced ? 1 : 1.15 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: m.reduced ? 1 : 0.95 }}
-        transition={m.spring}
+        initial={{ opacity: 0, transform: m.reduced ? "scale(1)" : "scale(1.15)" }}
+        animate={{ opacity: 1, transform: "scale(1)" }}
+        exit={{ opacity: 0, transform: m.reduced ? "scale(1)" : "scale(0.95)" }}
+        transition={{ duration: 0.35 * m.scale, ease: [0.32, 0.72, 0, 1] }}
       >
         <div className="px-4 pb-4 pt-[19px]">
           <p className="text-[17px] font-semibold leading-[22px]">{title}</p>

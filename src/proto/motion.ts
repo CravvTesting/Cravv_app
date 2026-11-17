@@ -12,8 +12,10 @@ export const MOTION = {
   spring: { type: "spring", duration: 0.35, bounce: 0 } as const,
   /** Push/pop between screens. */
   page: { type: "spring", duration: 0.5, bounce: 0 } as const,
-  /** Wait before a push/pop slide starts, so the new screen renders off-screen first (s). */
-  pageDelay: 0.06,
+  /** Push/pop duration (ms) and curve. Runs on the compositor via the Web Animations API. */
+  pageMs: 500,
+  /** iOS-like ease-out: fast start, long soft settle, no overshoot. */
+  easeCss: "cubic-bezier(0.32, 0.72, 0, 1)",
   /** Outgoing screen parallax on push (fraction of width). */
   parallax: 0.3,
   /** Sheet rise. */

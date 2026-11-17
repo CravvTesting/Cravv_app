@@ -1,6 +1,5 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useState, type PointerEvent } from "react";
 import { useMotionTokens } from "@/proto/motion";
 
@@ -25,25 +24,36 @@ export function useBloomOrigin() {
  * Solid fill layer that reveals as a circle growing from `origin` when `on` turns true,
  * and fades when it turns false. Reduced motion: plain crossfade.
  * Place as the first child of a `relative overflow-hidden` element.
+ *
+ * Uses a scaled circle with CSS transitions on transform/opacity only, so it runs on the
+ * compositor (smooth on iPhone even while the screen re-renders). clip-path animations
+ * repaint every frame on the main thread and stutter.
  */
+const R = 220; // circle radius in px: covers a chip or tile from any corner
+
 export function BloomFill({ on, color, origin }: { on: boolean; color: string; origin: Origin }) {
   const m = useMotionTokens();
-  const at = origin ? `${origin.x}px ${origin.y}px` : "50% 50%";
+  const ox = origin ? origin.x : "50%";
+  const oy = origin ? origin.y : "50%";
+  const grow = `transform ${0.5 * m.scale}s var(--ease-ios), opacity ${0.12 * m.scale}s linear`;
+  const fade = `opacity ${0.2 * m.scale}s ease, transform 0s linear ${0.2 * m.scale}s`;
   return (
-    <AnimatePresence initial={false}>
-      {on && (
-        <motion.span
-          key="fill"
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{ background: color }}
-          initial={m.reduced ? { opacity: 0 } : { clipPath: `circle(0% at ${at})` }}
-          animate={m.reduced ? { opacity: 1 } : { clipPath: `circle(150% at ${at})`, opacity: 1 }}
-          exit={{ opacity: 0, transition: m.fade }}
-          transition={m.reduced ? m.fade : { ...m.spring, duration: m.spring.duration * 1.4 }}
-        />
-      )}
-    </AnimatePresence>
+    <span
+      aria-hidden
+      className="pointer-events-none absolute"
+      style={{
+        left: typeof ox === "number" ? ox - R : `calc(${ox} - ${R}px)`,
+        top: typeof oy === "number" ? oy - R : `calc(${oy} - ${R}px)`,
+        width: R * 2,
+        height: R * 2,
+        borderRadius: "50%",
+        background: color,
+        transform: m.reduced ? "none" : on ? "scale(1)" : "scale(0)",
+        opacity: on ? 1 : 0,
+        transition: on ? grow : fade,
+        willChange: "transform, opacity",
+      }}
+    />
   );
 }
 

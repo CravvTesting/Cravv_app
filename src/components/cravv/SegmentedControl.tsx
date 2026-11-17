@@ -1,7 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
-import { useId, useRef, type KeyboardEvent } from "react";
+import { useRef, type KeyboardEvent } from "react";
 import { useMotionTokens } from "@/proto/motion";
 import { cx } from "./utils";
 
@@ -38,10 +37,11 @@ export function SegmentedControl<V extends string | number>({
   className,
 }: SegmentedControlProps<V>) {
   const m = useMotionTokens();
-  const layoutId = `seg-${useId()}`;
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const opts = options.map(norm);
   const pill = variant === "pill";
+  const gap = pill ? 0 : 4;
+  const selected = opts.findIndex((o) => o.value === value);
 
   const onKey = (e: KeyboardEvent, i: number) => {
     const d = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
@@ -59,6 +59,18 @@ export function SegmentedControl<V extends string | number>({
       className={cx("relative flex h-8 w-full rounded-full p-0.5", pill ? "gap-0" : "gap-1", className)}
       style={{ background: pill ? "rgba(255,255,255,0.1)" : "rgba(118,118,128,0.24)" }}
     >
+      {/* Thumb: one element slid with a compositor-friendly transform. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute bottom-0.5 left-0.5 top-0.5 rounded-full"
+        style={{
+          width: `calc((100% - 4px - ${(opts.length - 1) * gap}px) / ${opts.length})`,
+          transform: `translate3d(calc(${Math.max(0, selected)} * (100% + ${gap}px)), 0, 0)`,
+          transition: m.reduced ? "none" : `transform ${0.35 * m.scale}s var(--ease-ios)`,
+          background: pill ? "var(--cravv-white)" : "rgba(255,255,255,0.27)",
+          willChange: "transform",
+        }}
+      />
       {opts.map((o, i) => {
         const on = o.value === value;
         return (
@@ -79,15 +91,6 @@ export function SegmentedControl<V extends string | number>({
               "before:absolute before:inset-x-0 before:-inset-y-2 before:content-['']"
             )}
           >
-            {on && (
-              <motion.span
-                layoutId={layoutId}
-                aria-hidden
-                className="absolute inset-0 rounded-full"
-                style={{ background: pill ? "var(--cravv-white)" : "rgba(255,255,255,0.27)" }}
-                transition={m.reduced ? { duration: 0 } : m.spring}
-              />
-            )}
             <span
               className={cx(
                 "relative block truncate text-center",

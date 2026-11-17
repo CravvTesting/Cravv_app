@@ -88,7 +88,7 @@ export default function S14b() {
         >
           <div className="relative h-[190px]">
             <img src="/img/calib/dish-first-cook.webp" alt="" className="absolute inset-0 size-full object-cover" />
-            <span className="absolute left-3.5 top-3.5 flex h-[26px] items-center rounded-[13px] bg-black/50 px-2.5 text-[12px] font-semibold text-white backdrop-blur-[7px]">
+            <span className="absolute left-3.5 top-3.5 flex h-[26px] items-center rounded-[13px] bg-black/60 px-2.5 text-[12px] font-semibold text-white ">
               Good first recipe
             </span>
           </div>

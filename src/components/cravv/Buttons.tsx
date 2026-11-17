@@ -97,7 +97,7 @@ export function GlassButton({ children, label, className, type = "button", ...re
       type={type}
       aria-label={label}
       className={cx(
-        "relative flex size-12 shrink-0 items-center justify-center rounded-full text-[#f5f5f5] backdrop-blur-xl select-none",
+        "relative flex size-12 shrink-0 items-center justify-center rounded-full text-[#f5f5f5] select-none",
         "transition-transform active:scale-95 disabled:opacity-35",
         className
       )}

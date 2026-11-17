@@ -6,7 +6,7 @@ export function Callout({ number, label, className }: { number: string | number;
   return (
     <span
       className={cx(
-        "inline-flex gap-2 rounded-full bg-black/50 px-2.5 py-1.5 text-[10px] uppercase leading-[14px] tracking-[0.4px] whitespace-nowrap backdrop-blur-[8px]",
+        "inline-flex gap-2 rounded-full bg-black/60 px-2.5 py-1.5 text-[10px] uppercase leading-[14px] tracking-[0.4px] whitespace-nowrap",
         className
       )}
     >

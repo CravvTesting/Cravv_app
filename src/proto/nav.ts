@@ -31,13 +31,13 @@ export const BACK: Record<ScreenId, ScreenId | null> = {
   "14": null, "14b": null, "home": null,
 };
 
-function writeHash(id: ScreenId, replace: boolean) {
-  const url = `#/${id}`;
-  const state = { tara: true, depth: useNavState.getState().stack.length };
-  try {
-    if (replace) history.replaceState(state, "", url);
-    else history.pushState(state, "", url);
-  } catch { /* ignore */ }
+/**
+ * The URL hash always shows the current screen (for deep links), but we never add browser
+ * history entries: iOS standalone web apps have their own edge-swipe back/forward gestures
+ * that walk browser history, which would fight our own swipe-back and resurrect old screens.
+ */
+function writeHash(id: ScreenId) {
+  try { history.replaceState(null, "", `#/${id}`); } catch { /* ignore */ }
 }
 
 function remember(id: ScreenId) {
@@ -62,7 +62,7 @@ export function go(id: ScreenId, opts: GoOptions = {}) {
     next = i >= 0 ? stack.slice(0, i + 1) : [...stack.slice(0, -1), id];
   } else next = [...stack, id];
   useNavState.setState({ id, stack: next, dir });
-  writeHash(id, !!opts.replace || dir === "pop" || dir === "instant");
+  writeHash(id);
   remember(id);
 }
 
@@ -80,20 +80,16 @@ export function initNav() {
   const { step, done } = useProto.getState();
   const start: ScreenId = isScreenId(fromHash) ? fromHash : done ? "home" : step;
   useNavState.setState({ id: start, stack: [start], dir: "none" });
-  writeHash(start, true);
+  writeHash(start);
   remember(start);
 
-  const onPop = () => {
+  // Someone edited the URL hash by hand: jump there with a cross-fade.
+  const onHash = () => {
     const h = location.hash.replace(/^#\/?/, "");
-    if (!isScreenId(h)) return;
-    const { stack } = useNavState.getState();
-    const i = stack.lastIndexOf(h);
-    if (i >= 0 && i < stack.length - 1) useNavState.setState({ id: h, stack: stack.slice(0, i + 1), dir: "pop" });
-    else useNavState.setState({ id: h, stack: [...stack, h], dir: "push" });
-    remember(h);
+    if (isScreenId(h) && h !== useNavState.getState().id) go(h, { dir: "none" });
   };
-  window.addEventListener("popstate", onPop);
-  return () => window.removeEventListener("popstate", onPop);
+  window.addEventListener("hashchange", onHash);
+  return () => window.removeEventListener("hashchange", onHash);
 }
 
 /** Hook for screens: current id plus navigation helpers. */

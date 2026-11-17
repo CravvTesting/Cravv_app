@@ -31,7 +31,7 @@ export default function S07() {
           <ScreenHeader steps={4} current={1} />
         </div>
         <div
-          className="absolute bottom-5 left-1/2 flex h-8 -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-2xl border border-white/12 bg-black/45 pl-2.5 pr-3.5 backdrop-blur-[6px]"
+          className="absolute bottom-5 left-1/2 flex h-8 -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-2xl border border-white/12 bg-black/60 pl-2.5 pr-3.5"
         >
           <Img src={`${IMG}/icon-play.svg`} className="size-3.5" />
           <span className="text-[13px] font-semibold text-white">Setup video · 1 min</span>
