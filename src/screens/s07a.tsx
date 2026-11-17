@@ -1,7 +1,7 @@
 "use client";
 
 import { PrimaryButton, TextButton } from "@/components/cravv";
-import { go } from "@/proto/nav";
+import { back, go } from "@/proto/nav";
 import { useProto } from "@/proto/store";
 import { Screen, ScreenHeader } from "@/proto/ui";
 import { IMG, PermissionHero, TitleBlock } from "./connect/parts";
@@ -19,7 +19,7 @@ export default function S07a() {
       footer={
         <div className="flex flex-col gap-1.5">
           <PrimaryButton onClick={() => (bluetooth === "deny" ? go("07c") : go("07b"))}>Continue</PrimaryButton>
-          <TextButton onClick={() => go("06", { dir: "pop" })}>Not Now</TextButton>
+          <TextButton onClick={() => back()}>Not Now</TextButton>
         </div>
       }
     >

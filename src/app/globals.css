@@ -59,3 +59,6 @@ button:disabled { cursor: default; }
 .cravv-rise { animation: cravv-rise-kf calc(0.45s * var(--motion-scale)) var(--ease-ios) both; }
 @keyframes cravv-spin { to { transform: rotate(360deg); } }
 .cravv-spin { animation: cravv-spin calc(0.8s * var(--motion-scale)) linear infinite; }
+
+/* Overlay layer passes touches through except to its children (sheets, dims). */
+.cravv-overlay-layer > * { pointer-events: auto; }

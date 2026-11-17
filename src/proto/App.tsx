@@ -328,7 +328,10 @@ export function App() {
           );
         })}
         <TabChrome show={TAB_ROOT_SCREENS.has(id)} />
-        <ErrorBoundary><AnimatePresence>{Overlay && <Overlay key={REGISTRY[id].group ?? id} id={id} />}</AnimatePresence></ErrorBoundary>
+        {/* Overlays (sheets, action sheets, alerts) sit above the tab chrome. */}
+        <div className="cravv-overlay-layer pointer-events-none absolute inset-0 z-[80]">
+          <ErrorBoundary><AnimatePresence>{Overlay && <Overlay key={REGISTRY[id].group ?? id} id={id} />}</AnimatePresence></ErrorBoundary>
+        </div>
         <DebugMenu />
       </div>
     </MotionConfig>

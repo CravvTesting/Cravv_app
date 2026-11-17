@@ -195,6 +195,19 @@ export function switchTab(tab: TabId) {
   commit({ id: stack[stack.length - 1], dir: "none", tab, stack, tabStacks });
 }
 
+/**
+ * End an onboarding flow (setup, recalibration). Outside the tabs: go Home. Inside a tab:
+ * pop back to the last tab screen before the flow started (skipping edit screens e04/e05/e11).
+ */
+export function finishFlow() {
+  const s = useNavState.getState();
+  if (!s.tab) { go("home"); return; }
+  const firstFlow = s.stack.findIndex((id) => naturalTab(id) === null);
+  const before = (firstFlow > 0 ? s.stack.slice(0, firstFlow) : s.stack.slice(0, 1)).filter((id) => !id.startsWith("e"));
+  const target = before[before.length - 1] ?? s.stack[0];
+  go(target, { dir: "pop" });
+}
+
 /** Leave the app tabs and go to an onboarding screen (sign out, reset). */
 export function exitToOnboarding(id: ScreenId = "01") {
   commit({ id, dir: "none", tab: null, stack: [id], tabStacks: {} });
